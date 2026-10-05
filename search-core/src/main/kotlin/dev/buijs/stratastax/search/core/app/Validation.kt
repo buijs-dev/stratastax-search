@@ -1,0 +1,44 @@
+/**
+ * Copyright (c) 2021 - 2026 Buijs Software
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+ * documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+ * WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+package dev.buijs.stratastax.search.core.app
+
+import dev.buijs.stratastax.search.core.api.SearchException
+
+/**
+ * Validates that [condition] holds, throwing a [EntityException] built from [lazyMessage]
+ * otherwise. Mirrors the standard-library `require`, but guarantees the thrown type is always
+ * [EntityException] rather than a generic [IllegalArgumentException].
+ *
+ * Public (not `internal`) because `search-api` - a separate module built on top of `entity-api` -
+ * calls this too (e.g. `Sort`'s own invariant check); `internal` in Kotlin is module-scoped, so a
+ * cross-module caller needs public visibility here.
+ *
+ * @param condition The condition that must hold.
+ * @param lazyMessage Supplier for the exception message, evaluated only when [condition] is
+ *   `false`.
+ * @throws EntityException If [condition] is `false`.
+ */
+inline fun validate(condition: Boolean, lazyMessage: () -> String) {
+    if (!condition) {
+        throw SearchException(lazyMessage())
+    }
+}
+
+inline fun <T> valueOrThrow(value: T?, lazyMessage: () -> String): T {
+    validate(value != null, lazyMessage)
+    return value!!
+}
