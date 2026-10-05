@@ -44,8 +44,8 @@ Filter operators and field names are evaluated **case-insensitively**.
 | `=ge=`   | Greater than or equal to    | Number, Date/Time                              | `score=ge=50`                      |
 | `=lt=`   | Less than                   | Number, Date/Time                              | `age=lt=18`                        |
 | `=le=`   | Less than or equal to       | Number, Date/Time                              | `price=le=99.95`                   |
-| `=in=`   | In a list of values         | String, Number, Enum                           | `status=in=(PENDING,ACTIVE)`       |
-| `=out=`  | Not in a list of values     | String, Number, Enum                           | `role=out=(GUEST,BANNED)`          |
+| `=in=`   | In a list of values         | String, Number, Enum, UUID                     | `status=in=(PENDING,ACTIVE)`       |
+| `=out=`  | Not in a list of values     | String, Number, Enum, UUID                     | `role=out=(GUEST,BANNED)`          |
 | `=like=` | Wildcard / pattern matching | String                                         | `name=like="*john*"`               |
 
 This is the only supported syntax; no alternative notations are accepted.
@@ -92,11 +92,11 @@ filter=name=like="Alex*"
 ```
 
 ### Data Types & Formatting
-- Strings: Can be unquoted if they contain no whitespace or special characters (`;`, `,`, `=`, etc.). Use double or single quotes for strings containing spaces: `title=="Grand Final"`.
+- Strings: Can be unquoted if they contain no whitespace, quotes, parentheses or the connectors `;` and `,`. Use double or single quotes for strings containing any of those: `title=="Grand Final"`. A value following an operator may contain `=` and `!` unquoted (`code==a=b` matches the text `a=b`). Inside quotes a quote character or backslash is escaped with a backslash.
 - Numbers: Integer or floating-point numbers without quotes: `score=ge=100`, `price=le=99.95`.
 - Booleans: `true` or `false`: `active==true`.
-- Date & Times: Must be formatted as ISO-8601 UTC strings: `2026-08-04T10:00:00Z`.
-- Null Values: Use the `null` keyword for checking missing values: `deletedAt==null` or `notes!=null`.
+- Date & Times: Must be a complete ISO-8601 instant, preferably in UTC: `2026-08-04T10:00:00Z`; fractional seconds are allowed (`2026-08-04T10:00:00.500Z`). A date without a time (`2026-08-04`) is rejected. Offsets such as `+02:00` are tolerated and converted to the same instant, but clients should send UTC.
+- Null Values: Use the `null` keyword for checking missing values: `deletedAt==null` or `notes!=null`. The keyword is case-insensitive and only applies to `==` and `!=`. A quoted value is always literal text: `notes=="null"` matches the text `null`.
 
 ## Pagination
 All search endpoints support pagination. 
@@ -124,7 +124,7 @@ Clients must never inspect or modify cursor values. Example:
 ```
 
 The first request has no cursor and returns results using only `sort`/`filter`; the response's `previous` cursor will be `null` in this case. 
-When there are no more additional items, the `next` cursor is `null`.
+When there are no more additional items, the `next` cursor is `null`. The `current` cursor is the cursor the page was requested with, so it is `null` for a first page.
 
 When navigating to the next set of items using the next cursor, all original criteria can be optionally added to the request. 
 E.g., taking the above example into account, the following requests are both valid and return the exact same response:
@@ -134,7 +134,9 @@ curl -X GET "https://api.stratastax.dev/v1/matches?limit=10&cursor=ABXCFEDFSFDBH
 curl -X GET "https://api.stratastax.dev/v1/matches?limit=10&cursor=ABXCFEDFSFDBH"
 ```
 
-Included criteria (as returned in the original response) in a paginated request must exactly match the criteria used to generate the cursor. 
+The cursor itself carries the criteria it was issued for (it remains opaque and signed), which is what allows a request to omit them.
+Included criteria (as returned in the original response) in a paginated request must exactly match the criteria used to generate the cursor.
+An omitted `sort` means the default sort of the endpoint: criteria are valid when they resolve to the same sort and filter as the cursor, so a client that never sends `sort` can repeat just its `filter`. 
 An error is returned when it does not match, as in the following example:
 
 ```shell
@@ -149,6 +151,8 @@ curl -X GET "https://api.stratastax.dev/v1/matches?limit=10&cursor=ABXCFEDFSFDBH
 
 > Limit is not part of the criteria and thus may be changed when requesting data using the next cursor.
 
+Because a cursor embeds its filter, the length of a filter is limited to 1000 characters (`maxFilterLength` on the `SearchParser`) and a cursor longer than 4096 characters (`maxCursorLength`) is rejected as invalid without being decoded.
+
 Cursor validation is important. This prevents clients from accidentally mixing cursors with different search criteria, 
 which could otherwise lead to skipped or duplicated results.
 
@@ -161,5 +165,11 @@ which could otherwise lead to skipped or duplicated results.
 | present | modified  | ❌              |
 
 ### Invalid or expired cursors
-If a cursor is malformed, unrecognized, or has expired, the API returns `400 Bad Request` with an error body identifying the cursor as the cause. 
+If a cursor is malformed, unrecognized, or has expired, an `InvalidCursorException` is thrown. The same applies when the criteria of the request do not match the criteria of the cursor.
+This should result in a `400 Bad Request` with an error body identifying the cursor as the cause; handling the exception is up to the consuming application.
 Clients should treat this as unrecoverable for that cursor and restart pagination from the first page (no cursor).
+
+A cursor expires 24 hours after it was issued by default. The expiry is configurable on the `SearchParser` (`cursorExpiry`).
+
+### Limit
+`limit` must be at least 1 and at most the maximum of the endpoint; other values are rejected.

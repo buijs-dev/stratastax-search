@@ -1,0 +1,43 @@
+[versions]
+assertj = "3.27.7"
+junit = "6.1.2"
+kotlin = "2.3.20"
+kotlin-logging = "7.0.5"
+logback = "1.6.4"
+mockk = "1.14.9"
+spotless = "8.2.1"
+stratastax-entity = "1.0.10-SNAPSHOT"
+stratastax-search = "2.0.2-SNAPSHOT"
+
+[libraries]
+kotlin-logging = { group = "io.github.oshai", name = "kotlin-logging", version.ref = "kotlin-logging"}
+
+# Stratastax
+stratastax-entity = { group = "dev.buijs.stratastax", name = "entity", version.ref = "stratastax-entity"}
+
+# Test
+assertj = { group = "org.assertj", name = "assertj-core", version.ref = "assertj"}
+junit-api = { group = "org.junit.jupiter", name = "junit-jupiter-api", version.ref = "junit"}
+junit-engine = { group = "org.junit.jupiter", name = "junit-jupiter-engine", version.ref = "junit"}
+junit-params = { group = "org.junit.jupiter", name = "junit-jupiter-params", version.ref = "junit"}
+junit-platform = { group = "org.junit.platform", name = "junit-platform-launcher", version.ref = "junit"}
+logback = {group = "ch.qos.logback", name = "logback-classic", version.ref = "logback"}
+mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk"}
+
+# Plugins that are added as dependencies in the root build.gradle.kts so they can be applied as plugin by scripts in src/main/kotlin
+kotlin-plugin-jvm = { group = "org.jetbrains.kotlin.jvm", name = "org.jetbrains.kotlin.jvm.gradle.plugin", version.ref = "kotlin" }
+spotless-plugin = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }
+
+[plugins]
+###
+
+[bundles]
+test = [
+    "assertj",
+    "junit-api",
+    "junit-engine",
+    "junit-params",
+    "junit-platform",
+    "logback",
+    "mockk"
+]
