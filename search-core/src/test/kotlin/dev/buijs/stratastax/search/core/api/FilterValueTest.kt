@@ -160,6 +160,16 @@ class FilterValueTest {
             assertThat(parse(string, "null", nullable = false, quoted = true))
                 .isEqualTo(FilterValue.StringValue("null"))
         }
+
+        @Test
+        fun `nullable defaults to true and quoted to false`() {
+            assertThat(FilterValue.of(string, "null", quoted = true))
+                .isEqualTo(FilterValue.StringValue("null"))
+            assertThat(FilterValue.of(string, "null", nullable = true))
+                .isEqualTo(FilterValue.NullValue)
+            assertThatThrownBy { FilterValue.of(string, "null", nullable = false) }
+                .isInstanceOf(SearchException::class.java)
+        }
     }
 
     @Nested
@@ -189,10 +199,18 @@ class FilterValueTest {
 
         @Test
         fun `a corrupt value exposes its field and raw value`() {
-            val corrupt = CorruptFilterValue.InvalidUuid(uuid, "x")
+            val corrupt =
+                listOf(
+                    CorruptFilterValue.InvalidNumber(number, "x"),
+                    CorruptFilterValue.InvalidBoolean(boolean, "x"),
+                    CorruptFilterValue.InvalidDateTime(dateTime, "x"),
+                    CorruptFilterValue.InvalidEnum(enum, "x"),
+                    CorruptFilterValue.InvalidUuid(uuid, "x"),
+                )
 
-            assertThat(corrupt.field).isEqualTo(uuid)
-            assertThat(corrupt.value).isEqualTo("x")
+            assertThat(corrupt.map { it.field })
+                .containsExactly(number, boolean, dateTime, enum, uuid)
+            assertThat(corrupt.map { it.value }).containsOnly("x")
         }
     }
 }

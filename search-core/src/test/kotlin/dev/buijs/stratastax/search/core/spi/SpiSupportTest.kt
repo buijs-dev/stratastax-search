@@ -49,6 +49,11 @@ class SpiSupportTest {
         fun `a dot-qualified path becomes camelCase`() {
             assertThat("game.expansions.name".toSearchFieldName()).isEqualTo("gameExpansionsName")
         }
+
+        @Test
+        fun `empty segments are dropped`() {
+            assertThat("game..name.".toSearchFieldName()).isEqualTo("gameName")
+        }
     }
 
     @Nested
@@ -171,6 +176,8 @@ class SpiSupportTest {
                 root.copy(name = "gameExpansions", parentName = root.name, fieldNames = emptyList())
 
             assertThat(root.parentName).isNull()
+            assertThat(root.fieldNames).containsExactly("a")
+            assertThat(child.fieldNames).isEmpty()
             assertThat(root.relation).isEqualTo(FieldGroupRelation.OneToMany)
             assertThat(root.domainType).isEqualTo(String::class as KClass<*>)
             assertThat(child.parentName).isEqualTo("game")

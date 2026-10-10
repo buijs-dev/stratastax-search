@@ -37,9 +37,7 @@ internal class FilterDslTest {
         EntityField("status", EntityFieldType.ENUM, enumValues = setOf("ACTIVE", "PENDING"))
 
     enum class Status {
-
         ACTIVE,
-        PENDING,
     }
 
     // == eq/ne ==
@@ -119,6 +117,28 @@ internal class FilterDslTest {
         assertThatThrownBy { stringField eq 123 }
             .isInstanceOf(SearchException::class.java)
             .hasMessage("Field 'name' is STRING, but got a value of type Int")
+    }
+
+    @Test
+    fun `eq wraps Float and Short as NumberValue`() {
+        assertThat((numberField eq 1.5f).value)
+            .isEqualTo(FilterValue.NumberValue(BigDecimal.valueOf(1.5)))
+        assertThat((numberField eq 7.toShort()).value)
+            .isEqualTo(FilterValue.NumberValue(BigDecimal.valueOf(7)))
+    }
+
+    @Test
+    fun `eq rejects a non-numeric value for a NUMBER field`() {
+        assertThatThrownBy { numberField eq "5" }
+            .isInstanceOf(SearchException::class.java)
+            .hasMessage("Field 'score' is NUMBER, but got a value of type String")
+    }
+
+    @Test
+    fun `eq rejects a non-temporal value for a DATETIME field`() {
+        assertThatThrownBy { dateTimeField eq "2026-01-01T00:00:00Z" }
+            .isInstanceOf(SearchException::class.java)
+            .hasMessage("Field 'createdAt' is DATETIME, but got a value of type String")
     }
 
     // == gt/ge/lt/le - restricted to NUMBER/DATE/DATETIME ==

@@ -95,10 +95,10 @@ private class ExpressionParser(
             ensureEndOfInput()
         }
 
-    private fun parseOr(finalize: (() -> Unit)? = null): FilterExpression =
+    private fun parseOr(finalize: () -> Unit): FilterExpression =
         parse(TokenType.OR) { parseAnd() }
             .selectFirstOrWrapList { OrExpression(it) }
-            .also { finalize?.invoke() }
+            .also { finalize() }
 
     private fun parseAnd(): FilterExpression =
         parse(TokenType.AND) { parsePrimary() }.selectFirstOrWrapList { AndExpression(it) }

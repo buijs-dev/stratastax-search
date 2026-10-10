@@ -229,7 +229,7 @@ private fun EntityField.toFilterValue(value: Any?): FilterValue =
                         is Double -> value.toBigDecimal()
                         is Float -> value.toBigDecimal()
                         is Short -> value.toInt().toBigDecimal()
-                        else -> typeMismatch(value)
+                        else -> throw typeMismatch(value)
                     },
                 )
             }
@@ -240,7 +240,7 @@ private fun EntityField.toFilterValue(value: Any?): FilterValue =
                     when (value) {
                         is Instant -> value
                         is OffsetDateTime -> value.toInstant()
-                        else -> typeMismatch(value)
+                        else -> throw typeMismatch(value)
                     },
                 )
             }
@@ -252,9 +252,9 @@ private fun EntityField.toFilterValue(value: Any?): FilterValue =
     }
 
 private inline fun <reified T> EntityField.requireType(value: Any): T =
-    value as? T ?: typeMismatch(value)
+    value as? T ?: throw typeMismatch(value)
 
-private fun EntityField.typeMismatch(value: Any): Nothing =
-    throw SearchException(
+private fun EntityField.typeMismatch(value: Any): SearchException =
+    SearchException(
         "Field '$name' is $type, but got a value of type ${value::class.simpleName}",
     )

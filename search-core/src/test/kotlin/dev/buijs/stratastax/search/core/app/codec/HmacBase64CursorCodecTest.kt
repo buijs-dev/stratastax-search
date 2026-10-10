@@ -263,6 +263,11 @@ class HmacBase64CursorCodecTest {
     }
 
     @Test
+    fun `a validly signed cursor with only an empty element is rejected`() {
+        assertThat(subject.decode(signed("1|h|A|1767225600|Z:|Z:|"))).isNull()
+    }
+
+    @Test
     fun `a validly signed cursor is accepted`() {
         val value = NumberValue.of(123).encode()
 

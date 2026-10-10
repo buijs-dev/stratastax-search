@@ -368,6 +368,27 @@ class TokenizerTest {
         }
 
         @Test
+        fun `a comma at the very end of an unclosed list is not a trailing comma`() {
+            assertThat(tokenize("status=in=(a,"))
+                .isEqualTo(listOf(field("status"), operator("=in="), lparen, value("a")))
+        }
+
+        @Test
+        fun `a comma followed by another symbol is not a trailing comma`() {
+            assertThat(tokenize("status=in=(a,,b)"))
+                .isEqualTo(
+                    listOf(
+                        field("status"),
+                        operator("=in="),
+                        lparen,
+                        value("a"),
+                        value("b"),
+                        rparen,
+                    ),
+                )
+        }
+
+        @Test
         fun `trailing comma in single-element list throws`() {
             assertThatThrownBy { tokenize("status=in=(a,)") }
                 .isInstanceOf(SearchException::class.java)

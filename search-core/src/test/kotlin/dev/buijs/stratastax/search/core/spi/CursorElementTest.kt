@@ -221,6 +221,20 @@ class CursorElementTest {
                 .hasMessage("Unknown cursor type discriminator: X")
         }
 
+        /** "\u0000S" has the same hashCode as "S", so this proves matching is not by hash alone. */
+        @ParameterizedTest
+        @ValueSource(strings = ["S", "N", "B", "T", "Z", "L"])
+        fun `should throw SearchException for a discriminator that only collides by hash`(
+            type: String,
+        ) {
+            val colliding = "\u0000$type"
+            assertThat(colliding.hashCode()).isEqualTo(type.hashCode())
+
+            assertThatThrownBy { CursorElement.of("$colliding:x") }
+                .isInstanceOf(SearchException::class.java)
+                .hasMessage("Unknown cursor type discriminator: $colliding")
+        }
+
         @Test
         fun `should verify constant delimiter values`() {
             assertThat(CursorElement.COMPONENT_DELIMITER).isEqualTo("|")

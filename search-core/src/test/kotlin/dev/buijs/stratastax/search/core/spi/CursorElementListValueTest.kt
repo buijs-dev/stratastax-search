@@ -49,6 +49,13 @@ internal class CursorElementListValueTest {
     }
 
     @Test
+    fun `values keep their order`() {
+        val values = listOf(CursorElement.StringValue("b"), CursorElement.StringValue("a"))
+
+        assertThat(CursorElement.ListValue(values).values).containsExactlyElementsOf(values)
+    }
+
+    @Test
     fun `an empty list round-trips`() {
         val original = CursorElement.ListValue(emptyList())
         assertThat(CursorElement.of(original.encode())).isEqualTo(original)

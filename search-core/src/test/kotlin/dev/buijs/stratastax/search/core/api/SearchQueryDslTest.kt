@@ -75,6 +75,17 @@ internal class SearchQueryDslTest {
     }
 
     @Test
+    fun `limit can be read and adjusted inside the builder`() {
+        val query =
+            search(testSearchConfiguration) {
+                limit *= 2
+                sort { id.asc() }
+            }
+
+        assertThat(query.limit).isEqualTo(testSearchConfiguration.defaultLimit * 2)
+    }
+
+    @Test
     fun `limit of zero or less throws`() {
         assertThatThrownBy {
             search {
@@ -278,11 +289,9 @@ internal class SearchQueryDslTest {
 
     @Test
     fun `and or or without expressions fails`() {
-        org.assertj.core.api.Assertions
-            .assertThatThrownBy { and() }
+        assertThatThrownBy { and() }
             .isInstanceOf(SearchException::class.java)
-        org.assertj.core.api.Assertions
-            .assertThatThrownBy { or() }
+        assertThatThrownBy { or() }
             .isInstanceOf(SearchException::class.java)
     }
 
