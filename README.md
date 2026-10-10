@@ -13,6 +13,9 @@ Searches support field-based sorting, RSQL-style filtering, and cursor-based pag
 This document describes the contract-level behavior that all search endpoints must implement consistently. 
 It is the reference for implementing search/filter/sort/pagination logic in Kotlin.
 
+See [USAGE.md](USAGE.md) for end-to-end examples: declaring entity fields and search configurations,
+parsing requests, assembling cursor pages and building queries with the Kotlin DSL.
+
 ## Sorting
 An optional parameter that allows you to sort the results by one or more fields.
 The format is `field1:ASC,field2:DESC`.

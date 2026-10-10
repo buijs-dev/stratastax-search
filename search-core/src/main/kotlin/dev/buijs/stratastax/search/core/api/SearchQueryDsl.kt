@@ -27,6 +27,13 @@ import dev.buijs.stratastax.search.core.spi.STANDARD_DEFAULT_LIMIT
 import dev.buijs.stratastax.search.core.spi.SearchConfiguration
 
 /**
+ * Scopes the DSL for building a [SearchQuery] programmatically. Deliberately separate from the
+ * configuration DSL's marker: it is an independent DSL family, and a marker only restricts implicit
+ * receivers within its own family.
+ */
+@DslMarker annotation class SearchQueryDsl
+
+/**
  * Builds a [SearchQuery] programmatically from typed [EntityField] references, for tests and other
  * non-HTTP callers. Independent of any [SearchConfiguration]: no default sort and no tiebreaker, so
  * a `sort { }` block is required.
