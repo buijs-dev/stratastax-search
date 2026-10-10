@@ -631,4 +631,23 @@ class TokenizerTest {
             assertThat(tokenize("   \t  ")).isEqualTo(emptyList<Token>())
         }
     }
+
+    @Nested
+    @DisplayName("Unknown symbols")
+    inner class UnknownSymbols {
+
+        /** RawScanner never emits this, so the mapper is fed the raw token directly. */
+        @Test
+        fun `a symbol the mapper does not know throws`() {
+            val rawTokens =
+                listOf(
+                    RawToken(RawType.WORD, "name", 0),
+                    RawToken(RawType.SYMBOL, "!", 4),
+                )
+
+            assertThatThrownBy { TokenMapper(rawTokens).map() }
+                .isInstanceOf(SearchException::class.java)
+                .hasMessage("Invalid character '!' at position 4 in filter expression")
+        }
+    }
 }

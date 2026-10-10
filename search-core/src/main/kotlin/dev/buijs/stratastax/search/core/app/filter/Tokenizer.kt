@@ -31,7 +31,6 @@ internal data class Token(
 internal enum class TokenType(
     val description: String,
 ) {
-
     FIELD("field name"),
     OPERATOR("operator"),
     VALUE("value"),
@@ -48,12 +47,11 @@ internal class Tokenizer(
     fun tokenize(): List<Token> = TokenMapper(RawScanner(input).scan()).map()
 }
 
-private class TokenMapper(
+internal class TokenMapper(
     private val rawTokens: List<RawToken>,
 ) {
 
     private enum class Position {
-
         FIELD,
         VALUE,
         CONNECTOR,
@@ -98,6 +96,12 @@ private class TokenMapper(
                                 result.add(Token(TokenType.OR, ","))
                                 position = Position.FIELD
                             }
+                        }
+                        else -> {
+                            throw SearchException(
+                                "Invalid character '${current.text}' at position " +
+                                    "${current.position} in filter expression",
+                            )
                         }
                     }
                 }

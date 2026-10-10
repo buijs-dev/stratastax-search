@@ -93,7 +93,9 @@ private fun parseField(
         }
 
     val fieldName = parts[0].trim()
-    validate(fieldName.isNotEmpty()) { "Sort field must not be blank at position ${index + 1}" }
+    validate(fieldName.isNotEmpty()) {
+        "Sort field must not be blank at position ${index + 1}"
+    }
 
     val directionValue = parts[1].trim()
     validate(directionValue.isNotEmpty()) {
@@ -104,13 +106,15 @@ private fun parseField(
         SearchFieldCache.find(fieldName, configuration)
             ?: throw SearchException("Unknown sort field '$fieldName'")
 
-    validate(field.sortable) { "Field '$fieldName' is not sortable" }
+    validate(field.sortable) {
+        "Field '$fieldName' is not sortable"
+    }
 
     val direction =
         try {
             SortDirection.of(directionValue, fieldName)
         } catch (e: IllegalArgumentException) {
-            throw SearchException(e.message ?: "Invalid sort direction '$directionValue'", e)
+            throw e.toSearchException("Invalid sort direction '$directionValue'")
         }
 
     return SortField(field, direction)
@@ -144,3 +148,6 @@ internal fun appendTiebreaker(
         fields.any { it.field.name.equals(tiebreaker.name, ignoreCase = true) } -> fields
         else -> fields + SortField(tiebreaker, SortDirection.ASC)
     }
+
+internal fun IllegalArgumentException.toSearchException(fallback: String): SearchException =
+    SearchException(message ?: fallback, this)

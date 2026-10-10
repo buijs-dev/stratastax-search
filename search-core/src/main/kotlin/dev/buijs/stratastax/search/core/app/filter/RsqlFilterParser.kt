@@ -62,11 +62,7 @@ internal class RsqlFilterParser(
             return null
         }
 
-        val tokens =
-            Tokenizer(value).tokenize().ifEmpty {
-                return null
-            }
-
+        val tokens = Tokenizer(value).tokenize()
         val fieldMap = SearchFieldCache.fieldMapFor(configuration)
         return Filter(root = ExpressionParser(tokens, fieldMap, maxNestingDepth).parseOrThrow())
     }

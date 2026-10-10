@@ -166,6 +166,19 @@ class OrderedMultivaluedSortParserTest {
                 .isInstanceOf(SearchException::class.java)
                 .hasMessage("Duplicate sort field 'score' in sort expression")
         }
+
+        @Test
+        fun `an IAE without message maps to a SearchException using fallback`() {
+            // given
+            val iae = IllegalArgumentException()
+
+            // when
+            val se = iae.toSearchException("BOOM!")
+
+            // then
+            assertThat(se).isInstanceOf(SearchException::class.java)
+            assertThat(se.message).isEqualTo("BOOM!")
+        }
     }
 
     @Nested
