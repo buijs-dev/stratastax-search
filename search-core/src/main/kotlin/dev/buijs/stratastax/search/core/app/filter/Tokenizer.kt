@@ -22,9 +22,16 @@ import dev.buijs.stratastax.search.core.api.SearchException
  * @property quoted Whether a [TokenType.VALUE] was written in quotes, so it is always a literal
  *   text.
  */
-internal data class Token(val type: TokenType, val text: String, val quoted: Boolean = false)
+internal data class Token(
+    val type: TokenType,
+    val text: String,
+    val quoted: Boolean = false,
+)
 
-internal enum class TokenType(val description: String) {
+internal enum class TokenType(
+    val description: String,
+) {
+
     FIELD("field name"),
     OPERATOR("operator"),
     VALUE("value"),
@@ -34,14 +41,19 @@ internal enum class TokenType(val description: String) {
     OR("',' or 'or'"),
 }
 
-internal class Tokenizer(private val input: String) {
+internal class Tokenizer(
+    private val input: String,
+) {
 
     fun tokenize(): List<Token> = TokenMapper(RawScanner(input).scan()).map()
 }
 
-private class TokenMapper(private val rawTokens: List<RawToken>) {
+private class TokenMapper(
+    private val rawTokens: List<RawToken>,
+) {
 
     private enum class Position {
+
         FIELD,
         VALUE,
         CONNECTOR,
@@ -93,10 +105,8 @@ private class TokenMapper(private val rawTokens: List<RawToken>) {
                 RawType.OPERATOR -> {
                     result.add(Token(TokenType.OPERATOR, current.text))
                     position = Position.VALUE
-                    if (
-                        current.text.equals("=in=", ignoreCase = true) ||
-                            current.text.equals("=out=", ignoreCase = true)
-                    ) {
+                    val isSetOperator = current.text.lowercase() in SET_OPERATORS
+                    if (isSetOperator) {
                         inList = true
                     }
                 }
@@ -111,7 +121,9 @@ private class TokenMapper(private val rawTokens: List<RawToken>) {
                 RawType.WORD -> {
                     val text = current.text
                     when {
-                        inList -> result.add(Token(TokenType.VALUE, text))
+                        inList -> {
+                            result.add(Token(TokenType.VALUE, text))
+                        }
 
                         position == Position.CONNECTOR && text.equals("and", ignoreCase = true) -> {
                             result.add(Token(TokenType.AND, text))
@@ -140,8 +152,10 @@ private class TokenMapper(private val rawTokens: List<RawToken>) {
                     }
                 }
             }
+
             i++
         }
+
         return result
     }
 
@@ -149,8 +163,11 @@ private class TokenMapper(private val rawTokens: List<RawToken>) {
         val next = rawTokens.getOrNull(currentIndex + 1)
         if (next?.type == RawType.SYMBOL && next.text == ")") {
             throw SearchException(
-                "Trailing comma is not allowed before ')' at position ${next.position}"
+                "Trailing comma is not allowed before ')' at position ${next.position}",
             )
         }
     }
 }
+
+/** The RSQL operators followed by a parenthesized list of values. */
+private val SET_OPERATORS = setOf("=in=", "=out=")

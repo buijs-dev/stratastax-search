@@ -18,11 +18,11 @@ package dev.buijs.stratastax.search.core.api
 
 import dev.buijs.stratastax.entity.core.api.EntityField
 import dev.buijs.stratastax.entity.core.api.EntityFieldType
-import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 
 class FilterTest {
 

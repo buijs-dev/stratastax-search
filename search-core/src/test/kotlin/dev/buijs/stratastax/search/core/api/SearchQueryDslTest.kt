@@ -18,10 +18,11 @@ package dev.buijs.stratastax.search.core.api
 
 import dev.buijs.stratastax.entity.core.api.EntityField
 import dev.buijs.stratastax.entity.core.api.EntityFieldType
+import dev.buijs.stratastax.entity.core.api.Sort
+import dev.buijs.stratastax.entity.core.api.SortDirection
+import dev.buijs.stratastax.entity.core.api.SortField
 import dev.buijs.stratastax.search.core.spi.CursorElement
 import dev.buijs.stratastax.search.core.spi.STANDARD_DEFAULT_LIMIT
-import dev.buijs.stratastax.search.core.spi.SortDirection
-import dev.buijs.stratastax.search.core.spi.SortField
 import dev.buijs.stratastax.search.testdata.nameField
 import dev.buijs.stratastax.search.testdata.nameSortField
 import dev.buijs.stratastax.search.testdata.scoreField
@@ -41,12 +42,15 @@ internal class SearchQueryDslTest {
     fun `search builds a SearchQuery from limit sort filter and after`() {
         val cursor = CursorState(listOf(CursorElement.StringValue("x")), "hash")
 
-        val query = search {
-            limit = 10
-            sort { displayName.asc() }
-            filter { owner eq "Alain" }
-            after(cursor)
-        }
+        val query =
+            search {
+                limit = 10
+                sort { displayName.asc() }
+
+                filter { owner eq "Alain" }
+
+                after(cursor)
+            }
 
         assertThat(query.limit).isEqualTo(10)
         assertThat(query.sort).isEqualTo(Sort(listOf(SortField(displayName, SortDirection.ASC))))
@@ -57,8 +61,8 @@ internal class SearchQueryDslTest {
                         owner,
                         ComparisonOperator.EQUALS,
                         FilterValue.StringValue("Alain"),
-                    )
-                )
+                    ),
+                ),
             )
         assertThat(query.cursor).isEqualTo(cursor)
     }
@@ -66,18 +70,18 @@ internal class SearchQueryDslTest {
     @Test
     fun `limit defaults to STANDARD_DEFAULT_LIMIT when not set`() {
         val query = search { sort { id.asc() } }
+
         assertThat(query.limit).isEqualTo(STANDARD_DEFAULT_LIMIT)
     }
 
     @Test
     fun `limit of zero or less throws`() {
         assertThatThrownBy {
-                search {
-                    limit = 0
-                    sort { id.asc() }
-                }
+            search {
+                limit = 0
+                sort { id.asc() }
             }
-            .isInstanceOf(SearchException::class.java)
+        }.isInstanceOf(SearchException::class.java)
     }
 
     @Test
@@ -106,8 +110,8 @@ internal class SearchQueryDslTest {
                     listOf(
                         SortField(scoreField, SortDirection.DESC),
                         SortField(nameField, SortDirection.ASC),
-                    )
-                )
+                    ),
+                ),
             )
     }
 
@@ -133,19 +137,20 @@ internal class SearchQueryDslTest {
                     listOf(
                         SortField(scoreField, SortDirection.DESC),
                         SortField(nameField, SortDirection.ASC),
-                    )
-                )
+                    ),
+                ),
             )
     }
 
     @Test
     fun `multiple asc desc calls inside one sort block all register in order`() {
-        val query = search {
-            sort {
-                displayName.asc()
-                id.desc()
+        val query =
+            search {
+                sort {
+                    displayName.asc()
+                    id.desc()
+                }
             }
-        }
 
         assertThat(query.sort)
             .isEqualTo(
@@ -153,24 +158,28 @@ internal class SearchQueryDslTest {
                     listOf(
                         SortField(displayName, SortDirection.ASC),
                         SortField(id, SortDirection.DESC),
-                    )
-                )
+                    ),
+                ),
             )
     }
 
     @Test
     fun `filter is null when never called`() {
         val query = search { sort { id.asc() } }
+
         assertThat(query.filter).isEqualTo(null)
     }
 
     @Test
     fun `after(vararg CursorElement) computes criteriaHash from this query's own sort and filter`() {
-        val query = search {
-            sort { displayName.asc() }
-            filter { owner eq "Alain" }
-            after(CursorElement.StringValue("last-value"))
-        }
+        val query =
+            search {
+                sort { displayName.asc() }
+
+                filter { owner eq "Alain" }
+
+                after(CursorElement.StringValue("last-value"))
+            }
 
         val expectedHash = CriteriaHash.of(query.sort, query.filter)
         assertThat(query.cursor)
@@ -179,17 +188,19 @@ internal class SearchQueryDslTest {
                     listOf(CursorElement.StringValue("last-value")),
                     expectedHash,
                     criteria = CursorCriteria.of(query.sort, query.filter),
-                )
+                ),
             )
     }
 
     @Test
     fun `after(vararg CursorElement) hash is unaffected by call order relative to sort and filter`() {
-        val query = search {
-            after(CursorElement.StringValue("last-value"))
-            sort { displayName.asc() }
-            filter { owner eq "Alain" }
-        }
+        val query =
+            search {
+                after(CursorElement.StringValue("last-value"))
+                sort { displayName.asc() }
+
+                filter { owner eq "Alain" }
+            }
 
         val expectedHash = CriteriaHash.of(query.sort, query.filter)
         assertThat(query.cursor?.hash).isEqualTo(expectedHash)
@@ -197,11 +208,14 @@ internal class SearchQueryDslTest {
 
     @Test
     fun `before(vararg CursorElement) builds a cursor for the previous page`() {
-        val query = search {
-            sort { displayName.asc() }
-            filter { owner eq "Alain" }
-            before(CursorElement.StringValue("first-value"))
-        }
+        val query =
+            search {
+                sort { displayName.asc() }
+
+                filter { owner eq "Alain" }
+
+                before(CursorElement.StringValue("first-value"))
+            }
 
         assertThat(query.cursor)
             .isEqualTo(
@@ -210,17 +224,19 @@ internal class SearchQueryDslTest {
                     CriteriaHash.of(query.sort, query.filter),
                     CursorDirection.BEFORE,
                     criteria = CursorCriteria.of(query.sort, query.filter),
-                )
+                ),
             )
     }
 
     @Test
     fun `the last of after and before wins`() {
-        val query = search {
-            sort { displayName.asc() }
-            before(CursorElement.StringValue("a"))
-            after(CursorElement.StringValue("b"))
-        }
+        val query =
+            search {
+                sort { displayName.asc() }
+
+                before(CursorElement.StringValue("a"))
+                after(CursorElement.StringValue("b"))
+            }
 
         assertThat(query.cursor?.direction).isEqualTo(CursorDirection.AFTER)
         assertThat(query.cursor?.values).containsExactly(CursorElement.StringValue("b"))
@@ -230,10 +246,12 @@ internal class SearchQueryDslTest {
     fun `after(CursorState) uses the given state as is`() {
         val state = CursorState(listOf(CursorElement.StringValue("a")), "some-hash")
 
-        val query = search {
-            sort { displayName.asc() }
-            after(state)
-        }
+        val query =
+            search {
+                sort { displayName.asc() }
+
+                after(state)
+            }
 
         assertThat(query.cursor).isSameAs(state)
     }
@@ -260,18 +278,22 @@ internal class SearchQueryDslTest {
 
     @Test
     fun `and or or without expressions fails`() {
-        org.assertj.core.api.Assertions.assertThatThrownBy { and() }
+        org.assertj.core.api.Assertions
+            .assertThatThrownBy { and() }
             .isInstanceOf(SearchException::class.java)
-        org.assertj.core.api.Assertions.assertThatThrownBy { or() }
+        org.assertj.core.api.Assertions
+            .assertThatThrownBy { or() }
             .isInstanceOf(SearchException::class.java)
     }
 
     @Test
     fun `filter can combine multiple conditions via and`() {
-        val query = search {
-            sort { id.asc() }
-            filter { and(owner eq "Alain", id eq "1") }
-        }
+        val query =
+            search {
+                sort { id.asc() }
+
+                filter { and(owner eq "Alain", id eq "1") }
+            }
 
         assertThat(query.filter?.root?.let { it::class }).isEqualTo(AndExpression::class)
     }

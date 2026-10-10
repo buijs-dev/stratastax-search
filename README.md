@@ -1,7 +1,11 @@
 # Stratastax Search API
 
+[![Stratastax](https://img.shields.io/badge/Product-stratastax.dev-4F46E5?style=flat)](https://stratastax.dev/)
 [![](https://img.shields.io/badge/Buijs-Software-blue)](https://buijs.dev/)
-[![GitHub](https://img.shields.io/github/license/buijs-dev/klutter?color=black)](https://github.com/buijs-dev/stratastax-search/blob/main/LICENSE)
+[![GitHub](https://img.shields.io/github/license/buijs-dev/stratastax-search?color=black)](https://github.com/buijs-dev/stratastax-search/blob/main/LICENSE)
+[![codecov](https://codecov.io/gh/buijs-dev/stratastax-search/graph/badge.svg?token=BNKJJFHIcP)](https://codecov.io/gh/buijs-dev/stratastax-search)
+[![CodeScene Average Code Health](https://codescene.io/projects/85920/status-badges/average-code-health)](https://codescene.io/projects/85920)
+[![CodeScene System Mastery](https://codescene.io/projects/85920/status-badges/system-mastery)](https://codescene.io/projects/85920)
 
 A generic search API used throughout Stratastax.
 Searches support field-based sorting, RSQL-style filtering, and cursor-based pagination.
@@ -30,27 +34,29 @@ This guarantees deterministic ordering across requests.
 ## Filtering
 Filtering is based on an RSQL-style query syntax. 
 Filter parameters should be URL-encoded when sent in a request. 
-Filter operators and field names are evaluated **case-insensitively**.
+Filter operators and field names are evaluated **case-insensitively**; values are not (see [Data Types & Formatting](#data-types--formatting)).
 
 > Only filterable fields documented for the endpoint are supported.
 
 ### Supported Operators
 
-| Operator | Description                 | Supported Data Type                            | Example                            |
-|:---------|:----------------------------|:-----------------------------------------------|:-----------------------------------|
-| `==`     | Equal to                    | String, Number, Boolean, Date/Time, Enum, Null | `status==ACTIVE`                   |
-| `!=`     | Not equal to                | String, Number, Boolean, Date/Time, Enum, Null | `status!=CANCELLED`                |
-| `=gt=`   | Greater than                | Number, Date/Time                              | `playedAt=gt=2026-01-01T00:00:00Z` |
-| `=ge=`   | Greater than or equal to    | Number, Date/Time                              | `score=ge=50`                      |
-| `=lt=`   | Less than                   | Number, Date/Time                              | `age=lt=18`                        |
-| `=le=`   | Less than or equal to       | Number, Date/Time                              | `price=le=99.95`                   |
-| `=in=`   | In a list of values         | String, Number, Enum, UUID                     | `status=in=(PENDING,ACTIVE)`       |
-| `=out=`  | Not in a list of values     | String, Number, Enum, UUID                     | `role=out=(GUEST,BANNED)`          |
-| `=like=` | Wildcard / pattern matching | String                                         | `name=like="*john*"`               |
+| Operator  | Description                         | Supported Data Type                                        | Example                            |
+|:----------|:------------------------------------|:-----------------------------------------------------------|:-----------------------------------|
+| `==`      | Equal to                            | String, Number, Boolean, Date/Time, Enum, UUID, JSON, Null | `status==ACTIVE`                   |
+| `!=`      | Not equal to                        | String, Number, Boolean, Date/Time, Enum, UUID, JSON, Null | `status!=CANCELLED`                |
+| `=gt=`    | Greater than                        | Number, Date/Time                                          | `playedAt=gt=2026-01-01T00:00:00Z` |
+| `=ge=`    | Greater than or equal to            | Number, Date/Time                                          | `score=ge=50`                      |
+| `=lt=`    | Less than                           | Number, Date/Time                                          | `age=lt=18`                        |
+| `=le=`    | Less than or equal to               | Number, Date/Time                                          | `price=le=99.95`                   |
+| `=in=`    | In a list of values                 | String, Number, Enum, UUID                                 | `status=in=(PENDING,ACTIVE)`       |
+| `=out=`   | Not in a list of values             | String, Number, Enum, UUID                                 | `role=out=(GUEST,BANNED)`          |
+| `=like=`  | Pattern matching (case-sensitive)   | String                                                     | `name=like="John%"`                |
+| `=ilike=` | Pattern matching (case-insensitive) | String                                                     | `name=ilike="%john%"`              |
 
 This is the only supported syntax; no alternative notations are accepted.
 
-The `*` wildcard matches zero or more characters. `=like=` value matching is case-insensitive.
+In a pattern, `%` matches zero or more characters and `_` matches exactly one. 
+With `=ilike=`, a backslash makes the next `%`, `_` or `\` literal: `code=ilike=100\%`. Quotes consume a backslash themselves, so quoted this becomes `code=ilike="100\\%"`.
 
 ### Logical Operators & Precedence
 You can combine multiple criteria using logical operators:
@@ -88,7 +94,7 @@ filter=playedAt=ge=2026-01-01T00:00:00Z;(status==COMPLETED,score=gt=100)
 Find player names starting with "Alex" (case-insensitive):
 
 ```
-filter=name=like="Alex*"
+filter=name=ilike="Alex%"
 ```
 
 ### Data Types & Formatting
@@ -96,6 +102,9 @@ filter=name=like="Alex*"
 - Numbers: Integer or floating-point numbers without quotes: `score=ge=100`, `price=le=99.95`.
 - Booleans: `true` or `false`: `active==true`.
 - Date & Times: Must be a complete ISO-8601 instant, preferably in UTC: `2026-08-04T10:00:00Z`; fractional seconds are allowed (`2026-08-04T10:00:00.500Z`). A date without a time (`2026-08-04`) is rejected. Offsets such as `+02:00` are tolerated and converted to the same instant, but clients should send UTC.
+- Enums: Must exactly match one of the documented values; enum values are case-sensitive: `status==ACTIVE`.
+- UUIDs: The standard textual form: `id==3f2504e0-4f89-11d3-9a0c-0305e82c3301`.
+- JSON: Only `==` and `!=`, compared against the whole value.
 - Null Values: Use the `null` keyword for checking missing values: `deletedAt==null` or `notes!=null`. The keyword is case-insensitive and only applies to `==` and `!=`. A quoted value is always literal text: `notes=="null"` matches the text `null`.
 
 ## Pagination
@@ -173,3 +182,12 @@ A cursor expires 24 hours after it was issued by default. The expiry is configur
 
 ### Limit
 `limit` must be at least 1 and at most the maximum of the endpoint; other values are rejected.
+
+## Related Stratastax projects
+
+- [stratastax-entity](https://github.com/buijs-dev/stratastax-entity) - the `@Search*` annotations this library implements
+- [stratastax-codegen](https://github.com/buijs-dev/stratastax-codegen) - generates the search configuration per entity
+- [stratastax-persistence](https://github.com/buijs-dev/stratastax-persistence) - applies search criteria to jOOQ queries
+- [stratastax-quarkus › quarkus-starter](https://github.com/buijs-dev/stratastax-quarkus/tree/main/quarkus-starter) - wires search into a Quarkus application
+- [stratastax-contract](https://github.com/buijs-dev/stratastax-contract) - the OpenAPI specs whose `sort`/`filter`/`cursor` parameters follow this contract
+- [stratastax-style](https://github.com/buijs-dev/stratastax-style) - the Kotlin code style this library is formatted with

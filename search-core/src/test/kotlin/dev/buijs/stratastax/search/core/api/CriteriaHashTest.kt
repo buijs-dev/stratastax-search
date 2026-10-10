@@ -27,11 +27,13 @@ class CriteriaHashTest {
     private val filterParser = RsqlFilterParser()
     private val sortParser = OrderedMultivaluedSortParser()
 
-    private fun hash(sort: String? = null, filter: String? = null) =
-        CriteriaHash.of(
-            sortParser.parse(sort, testSearchConfiguration),
-            filterParser.parse(filter, testSearchConfiguration),
-        )
+    private fun hash(
+        sort: String? = null,
+        filter: String? = null,
+    ) = CriteriaHash.of(
+        sortParser.parse(sort, testSearchConfiguration),
+        filterParser.parse(filter, testSearchConfiguration),
+    )
 
     @Test
     fun `a string containing separators does not hash like a list of values`() {
@@ -49,6 +51,12 @@ class CriteriaHashTest {
     fun `a like pattern is length prefixed`() {
         assertThat(hash(filter = "name=like=\"a*\""))
             .isNotEqualTo(hash(filter = "name=like=\"a**\""))
+    }
+
+    @Test
+    fun `a case-insensitive like does not hash like a case-sensitive one`() {
+        assertThat(hash(filter = "name=ilike=\"a*\""))
+            .isNotEqualTo(hash(filter = "name=like=\"a*\""))
     }
 
     @Test

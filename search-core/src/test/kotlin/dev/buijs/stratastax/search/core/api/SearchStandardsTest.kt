@@ -71,6 +71,7 @@ class SearchStandardsTest {
     @Test
     fun `standard cursor codec rejects a cursor of another version`() {
         val signingKey = CursorSigningKey { "secret".toByteArray() }
+
         val v1 = standardCursorCodec(signingKey)
         val v2 = standardCursorCodec(signingKey, version = "2")
 

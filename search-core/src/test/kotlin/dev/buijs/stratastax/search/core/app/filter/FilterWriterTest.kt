@@ -46,6 +46,7 @@ class FilterWriterTest {
                 "status=out=(COMPLETED)",
                 "name=in=(a,\"b c\",'d')",
                 "name=like=\"*john*\"",
+                "name=ilike=\"%john%\"",
                 "name==\"quote \\\" backslash \\\\ pipe | percent % semi ; comma , (paren)\"",
                 "name==\"and\"",
                 "name==a=b!c",
@@ -56,7 +57,7 @@ class FilterWriterTest {
                 "(name==x,name==y);(score=gt=1,score=lt=0);active==false",
                 "((name==x;active==true),score=gt=1);name!=z",
                 "NAME==x AND SCORE=gt=1 or Active==TRUE",
-            ]
+            ],
     )
     fun `written filter parses back into the same tree and hash`(query: String) {
         val filter = parser.parse(query, testSearchConfiguration)!!

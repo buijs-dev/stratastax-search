@@ -68,6 +68,30 @@ fun EntityField.like(pattern: String): LikeExpression {
     return LikeExpression(this, pattern)
 }
 
+/**
+ * Field matches [pattern], ignoring case. Only for string fields.
+ *
+ * @throws SearchException If the field is not a string.
+ */
+fun EntityField.ilike(pattern: String): LikeExpression {
+    validate(ComparisonOperator.ILIKE.allowed(type)) {
+        "ILIKE is not allowed for field '$name' of type $type"
+    }
+
+    return LikeExpression(this, pattern, ignoreCase = true)
+}
+
+/**
+ * Field contains [value], ignoring case. Only for string fields. Wildcards in [value] (`%`, `_`)
+ * are matched literally: they are escaped with a backslash.
+ *
+ * @throws SearchException If the field is not a string.
+ */
+fun EntityField.containsIgnoreCase(value: String): LikeExpression = ilike("%${escapeLike(value)}%")
+
+private fun escapeLike(value: String): String =
+    value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
 /** Field equals any of the raw [values]. Not for boolean, date/time or JSON fields. */
 fun EntityField.inValues(vararg values: String): InExpression = inExpression(InOperator.IN, values)
 
@@ -75,7 +99,9 @@ fun EntityField.inValues(vararg values: String): InExpression = inExpression(InO
 fun EntityField.notInValues(vararg values: String): InExpression =
     inExpression(InOperator.OUT, values)
 
-/** Field equals the typed [value]; `null` matches a null field. Enums accept an [Enum] or its name. */
+/**
+ * Field equals the typed [value]; `null` matches a null field. Enums accept an [Enum] or its name.
+ */
 infix fun EntityField.eq(value: Any?): ComparisonExpression =
     typedComparison(ComparisonOperator.EQUALS, value)
 
@@ -175,7 +201,9 @@ private fun EntityField.toFilterValue(value: Any?): FilterValue =
         FilterValue.NullValue
     } else {
         when (type) {
-            EntityFieldType.STRING -> FilterValue.StringValue(requireType(value))
+            EntityFieldType.STRING -> {
+                FilterValue.StringValue(requireType(value))
+            }
             EntityFieldType.ENUM -> {
                 val enumName = if (value is Enum<*>) value.name else value as? String
                 validate(enumName != null && enumValues.contains(enumName)) {
@@ -183,11 +211,16 @@ private fun EntityField.toFilterValue(value: Any?): FilterValue =
                         enumValues.joinToString(", ")
                     }"
                 }
+
                 FilterValue.EnumValue(enumName!!)
             }
-            EntityFieldType.UUID -> FilterValue.UuidValue(requireType(value))
-            EntityFieldType.BOOLEAN -> FilterValue.BooleanValue(requireType(value))
-            EntityFieldType.NUMBER ->
+            EntityFieldType.UUID -> {
+                FilterValue.UuidValue(requireType(value))
+            }
+            EntityFieldType.BOOLEAN -> {
+                FilterValue.BooleanValue(requireType(value))
+            }
+            EntityFieldType.NUMBER -> {
                 FilterValue.NumberValue(
                     when (value) {
                         is BigDecimal -> value
@@ -197,19 +230,24 @@ private fun EntityField.toFilterValue(value: Any?): FilterValue =
                         is Float -> value.toBigDecimal()
                         is Short -> value.toInt().toBigDecimal()
                         else -> typeMismatch(value)
-                    }
+                    },
                 )
+            }
             EntityFieldType.DATE,
-            EntityFieldType.DATETIME ->
+            EntityFieldType.DATETIME,
+            -> {
                 FilterValue.DateTimeValue(
                     when (value) {
                         is Instant -> value
                         is OffsetDateTime -> value.toInstant()
                         else -> typeMismatch(value)
-                    }
+                    },
                 )
+            }
             // Raw JSON text passed as a String, to avoid needing a JSON encoder in this module.
-            EntityFieldType.JSON -> FilterValue.JsonValue(requireType(value))
+            EntityFieldType.JSON -> {
+                FilterValue.JsonValue(requireType(value))
+            }
         }
     }
 
@@ -218,5 +256,5 @@ private inline fun <reified T> EntityField.requireType(value: Any): T =
 
 private fun EntityField.typeMismatch(value: Any): Nothing =
     throw SearchException(
-        "Field '$name' is $type, but got a value of type ${value::class.simpleName}"
+        "Field '$name' is $type, but got a value of type ${value::class.simpleName}",
     )

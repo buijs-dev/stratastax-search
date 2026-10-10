@@ -16,13 +16,14 @@
  */
 package dev.buijs.stratastax.search.core.api
 
+import dev.buijs.stratastax.entity.core.api.Sort
+import dev.buijs.stratastax.entity.core.api.SortDirection
+import dev.buijs.stratastax.entity.core.api.SortField
 import dev.buijs.stratastax.search.core.app.codec.HmacBase64CursorCodec
 import dev.buijs.stratastax.search.core.app.filter.RsqlFilterParser
 import dev.buijs.stratastax.search.core.app.sort.OrderedMultivaluedSortParser
 import dev.buijs.stratastax.search.core.spi.CursorElement
 import dev.buijs.stratastax.search.core.spi.CursorElement.StringValue
-import dev.buijs.stratastax.search.core.spi.SortDirection
-import dev.buijs.stratastax.search.core.spi.SortField
 import dev.buijs.stratastax.search.testdata.activeField
 import dev.buijs.stratastax.search.testdata.nameField
 import dev.buijs.stratastax.search.testdata.nameSortField
@@ -30,15 +31,15 @@ import dev.buijs.stratastax.search.testdata.playedAtField
 import dev.buijs.stratastax.search.testdata.scoreField
 import dev.buijs.stratastax.search.testdata.statusField
 import dev.buijs.stratastax.search.testdata.testSearchConfiguration
-import java.time.Clock
-import java.time.Duration
-import java.time.Instant
-import java.time.ZoneOffset
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
+import java.time.ZoneOffset
 
 internal class SearchParserTest {
 
@@ -257,9 +258,8 @@ internal class SearchParserTest {
         @Test
         fun `should throw InvalidCursorException for a malformed cursor`() {
             assertThatThrownBy {
-                    searchParser.parse(SearchRequest(cursor = "not-a-cursor"), configuration)
-                }
-                .isInstanceOf(InvalidCursorException::class.java)
+                searchParser.parse(SearchRequest(cursor = "not-a-cursor"), configuration)
+            }.isInstanceOf(InvalidCursorException::class.java)
                 .hasMessage("Invalid cursor")
         }
 
@@ -268,15 +268,14 @@ internal class SearchParserTest {
             val cursor = cursorFor(sort = "playedAt:DESC", filter = null)
 
             assertThatThrownBy {
-                    searchParser.parse(
-                        SearchRequest(
-                            cursor = cursor,
-                            criteria = SearchCriteria(sort = "playedAt:ASC"),
-                        ),
-                        configuration,
-                    )
-                }
-                .isInstanceOf(InvalidCursorException::class.java)
+                searchParser.parse(
+                    SearchRequest(
+                        cursor = cursor,
+                        criteria = SearchCriteria(sort = "playedAt:ASC"),
+                    ),
+                    configuration,
+                )
+            }.isInstanceOf(InvalidCursorException::class.java)
                 .hasMessageContaining("does not match")
         }
     }
@@ -298,17 +297,19 @@ internal class SearchParserTest {
                 CursorState(
                     listOf(StringValue("x")),
                     CriteriaHash.of(sortParser.parse(null, configuration), null),
-                )
+                ),
             )
 
-        private fun parserAt(now: Instant, expiry: Duration? = null) =
-            SearchParser(
-                cursorCodec = issuingCodec,
-                filterParser = filterParser,
-                sortParser = sortParser,
-                clock = Clock.fixed(now, ZoneOffset.UTC),
-                cursorExpiry = expiry ?: SearchParser.DEFAULT_CURSOR_EXPIRY,
-            )
+        private fun parserAt(
+            now: Instant,
+            expiry: Duration? = null,
+        ) = SearchParser(
+            cursorCodec = issuingCodec,
+            filterParser = filterParser,
+            sortParser = sortParser,
+            clock = Clock.fixed(now, ZoneOffset.UTC),
+            cursorExpiry = expiry ?: SearchParser.DEFAULT_CURSOR_EXPIRY,
+        )
 
         @Test
         fun `default expiry is 24 hours`() {
@@ -365,17 +366,19 @@ internal class SearchParserTest {
             sort: String? = null,
             filter: String? = null,
             limit: Int? = null,
-        ) =
-            searchParser.parse(
-                SearchRequest(
-                    limit = limit,
-                    cursor = cursor,
-                    criteria =
-                        if (sort == null && filter == null) null
-                        else SearchCriteria(sort = sort, filter = filter),
-                ),
-                configuration,
-            )
+        ) = searchParser.parse(
+            SearchRequest(
+                limit = limit,
+                cursor = cursor,
+                criteria =
+                    if (sort == null && filter == null) {
+                        null
+                    } else {
+                        SearchCriteria(sort = sort, filter = filter)
+                    },
+            ),
+            configuration,
+        )
 
         @Test
         fun `absent cursor - first page`() {
@@ -452,7 +455,11 @@ internal class SearchParserTest {
             val query = parse(noFilter)
 
             assertThat(query.filter).isNull()
-            assertThat(query.sort.fields.first().direction).isEqualTo(SortDirection.DESC)
+            assertThat(
+                query.sort.fields
+                    .first()
+                    .direction,
+            ).isEqualTo(SortDirection.DESC)
         }
 
         @Test
@@ -501,7 +508,7 @@ internal class SearchParserTest {
                         listOf(StringValue("x")),
                         CriteriaHash.of(query.sort, query.filter),
                         criteria = CursorCriteria.of(query.sort, query.filter),
-                    )
+                    ),
                 )
 
             assertThat(encoded.length).isLessThanOrEqualTo(SearchParser.DEFAULT_MAX_CURSOR_LENGTH)
@@ -529,7 +536,11 @@ internal class SearchParserTest {
         }
     }
 
-    private fun cursorFor(sort: String?, filter: String?, withCriteria: Boolean = true): String {
+    private fun cursorFor(
+        sort: String?,
+        filter: String?,
+        withCriteria: Boolean = true,
+    ): String {
         val parsedSort = sortParser.parse(sort, configuration)
         val parsedFilter = filterParser.parse(filter, configuration)
         return cursorCodec.encode(
@@ -537,7 +548,7 @@ internal class SearchParserTest {
                 values = listOf(StringValue("x")),
                 hash = CriteriaHash.of(parsedSort, parsedFilter),
                 criteria = if (withCriteria) CursorCriteria.of(parsedSort, parsedFilter) else null,
-            )
+            ),
         )
     }
 
@@ -559,7 +570,7 @@ internal class SearchParserTest {
                                     testSearchConfiguration.tiebreakerField,
                                     SortDirection.ASC,
                                 ),
-                            )
+                            ),
                         ),
                     filter =
                         Filter(
@@ -567,7 +578,7 @@ internal class SearchParserTest {
                                 field = activeField,
                                 operator = ComparisonOperator.EQUALS,
                                 value = FilterValue.BooleanValue(false),
-                            )
+                            ),
                         ),
                 )
 
@@ -607,8 +618,7 @@ private fun testCursorState(
     offset: Int,
     sort: Sort = Sort(testSearchConfiguration.defaultSort),
     filter: Filter? = null,
-) =
-    CursorState(
-        values = listOf(CursorElement.StringValue(id), CursorElement.NumberValue.of(offset)),
-        hash = CriteriaHash.of(sort, filter),
-    )
+) = CursorState(
+    values = listOf(CursorElement.StringValue(id), CursorElement.NumberValue.of(offset)),
+    hash = CriteriaHash.of(sort, filter),
+)

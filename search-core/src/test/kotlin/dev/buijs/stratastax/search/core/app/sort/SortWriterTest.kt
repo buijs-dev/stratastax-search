@@ -16,10 +16,10 @@
  */
 package dev.buijs.stratastax.search.core.app.sort
 
+import dev.buijs.stratastax.entity.core.api.Sort
+import dev.buijs.stratastax.entity.core.api.SortDirection
+import dev.buijs.stratastax.entity.core.api.SortField
 import dev.buijs.stratastax.search.core.api.SearchException
-import dev.buijs.stratastax.search.core.api.Sort
-import dev.buijs.stratastax.search.core.spi.SortDirection
-import dev.buijs.stratastax.search.core.spi.SortField
 import dev.buijs.stratastax.search.testdata.nameField
 import dev.buijs.stratastax.search.testdata.playedAtField
 import dev.buijs.stratastax.search.testdata.statusField
@@ -36,7 +36,7 @@ class SortWriterTest {
                 SortField(playedAtField, SortDirection.DESC),
                 SortField(statusField, SortDirection.ASC),
                 SortField(nameField, SortDirection.ASC),
-            )
+            ),
         )
 
     @Test

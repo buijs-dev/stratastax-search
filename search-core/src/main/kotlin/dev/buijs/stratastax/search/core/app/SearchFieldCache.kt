@@ -52,6 +52,8 @@ internal object SearchFieldCache {
      * @param configuration The active [SearchConfiguration].
      * @return The matching [EntityField], or `null` if no field with that name exists.
      */
-    internal fun find(name: String, configuration: SearchConfiguration): EntityField? =
-        fieldMapFor(configuration)[name.lowercase()]
+    internal fun find(
+        name: String,
+        configuration: SearchConfiguration,
+    ): EntityField? = fieldMapFor(configuration)[name.lowercase()]
 }

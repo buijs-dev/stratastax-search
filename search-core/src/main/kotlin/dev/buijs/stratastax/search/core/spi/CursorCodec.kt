@@ -20,6 +20,7 @@ import dev.buijs.stratastax.search.core.api.CursorState
 
 /** Serializes a [CursorState] to and from the opaque cursor string exposed to API clients. */
 interface CursorCodec {
+
     /**
      * Decodes [cursor] back into its [CursorState].
      *

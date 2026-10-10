@@ -1,13 +1,15 @@
 [versions]
 assertj = "3.27.7"
+dokka = "2.2.0"
+jacoco = "0.8.15"
 junit = "6.1.2"
 kotlin = "2.3.20"
 kotlin-logging = "7.0.5"
+kover = "0.9.11"
 logback = "1.6.4"
 mockk = "1.14.9"
-spotless = "8.2.1"
-stratastax-entity = "1.0.10-SNAPSHOT"
-stratastax-search = "2.0.2-SNAPSHOT"
+stratastax-entity = "1.0.0"
+stratastax-style = "1.0.0"
 
 [libraries]
 kotlin-logging = { group = "io.github.oshai", name = "kotlin-logging", version.ref = "kotlin-logging"}
@@ -26,7 +28,9 @@ mockk = { group = "io.mockk", name = "mockk", version.ref = "mockk"}
 
 # Plugins that are added as dependencies in the root build.gradle.kts so they can be applied as plugin by scripts in src/main/kotlin
 kotlin-plugin-jvm = { group = "org.jetbrains.kotlin.jvm", name = "org.jetbrains.kotlin.jvm.gradle.plugin", version.ref = "kotlin" }
-spotless-plugin = { group = "com.diffplug.spotless", name = "spotless-plugin-gradle", version.ref = "spotless" }
+kover-plugin = { group = "org.jetbrains.kotlinx", name = "kover-gradle-plugin", version.ref = "kover" }
+dokka-plugin = { group = "org.jetbrains.dokka", name = "dokka-gradle-plugin", version.ref = "dokka" }
+stratastax-style-plugin = { group = "dev.buijs.stratastax", name = "style-gradle-plugin", version.ref = "stratastax-style" }
 
 [plugins]
 ###

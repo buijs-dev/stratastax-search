@@ -24,6 +24,7 @@ import dev.buijs.stratastax.search.core.api.FilterValue
 import dev.buijs.stratastax.search.core.api.InExpression
 import dev.buijs.stratastax.search.core.api.LikeExpression
 import dev.buijs.stratastax.search.core.api.OrExpression
+import dev.buijs.stratastax.search.core.api.operatorToken
 
 /**
  * Writes a [Filter] as an RSQL expression the [RsqlFilterParser] reads back into an identical tree.
@@ -36,23 +37,37 @@ internal object FilterWriter {
 
     fun write(filter: Filter): String = write(filter.root, nested = false)
 
-    private fun write(expression: FilterExpression, nested: Boolean): String =
+    private fun write(
+        expression: FilterExpression,
+        nested: Boolean,
+    ): String =
         when (expression) {
-            is AndExpression -> group(expression.children, ";", nested)
-            is OrExpression -> group(expression.children, ",", nested)
-            is ComparisonExpression ->
+            is AndExpression -> {
+                group(expression.children, ";", nested)
+            }
+            is OrExpression -> {
+                group(expression.children, ",", nested)
+            }
+            is ComparisonExpression -> {
                 "${expression.field.name}${expression.operator.token}${value(expression.value)}"
-            is InExpression ->
+            }
+            is InExpression -> {
                 "${expression.field.name}${expression.operator.token}(" +
                     expression.values.joinToString(",") { value(it) } +
                     ")"
-            is LikeExpression -> "${expression.field.name}=like=${quote(expression.pattern)}"
+            }
+            is LikeExpression -> {
+                "${expression.field.name}${expression.operatorToken}${quote(expression.pattern)}"
+            }
         }
 
-    private fun group(children: List<FilterExpression>, separator: String, nested: Boolean) =
-        children
-            .joinToString(separator) { write(it, nested = true) }
-            .let { if (nested) "($it)" else it }
+    private fun group(
+        children: List<FilterExpression>,
+        separator: String,
+        nested: Boolean,
+    ) = children
+        .joinToString(separator) { write(it, nested = true) }
+        .let { if (nested) "($it)" else it }
 
     private fun value(value: FilterValue): String =
         when (value) {
@@ -66,12 +81,14 @@ internal object FilterWriter {
             is FilterValue.NullValue -> "null"
         }
 
-    private fun quote(text: String): String = buildString {
-        append('"')
-        for (ch in text) {
-            if (ch == '"' || ch == '\\') append('\\')
-            append(ch)
+    private fun quote(text: String): String =
+        buildString {
+            append('"')
+            for (ch in text) {
+                if (ch == '"' || ch == '\\') append('\\')
+                append(ch)
+            }
+
+            append('"')
         }
-        append('"')
-    }
 }

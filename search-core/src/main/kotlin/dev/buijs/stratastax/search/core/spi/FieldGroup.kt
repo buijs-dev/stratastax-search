@@ -23,6 +23,7 @@ import kotlin.reflect.KClass
  * ancestor group for a nested group).
  */
 sealed interface FieldGroupRelation {
+
     /** The parent relates to exactly one related instance. */
     data object OneToOne : FieldGroupRelation
 

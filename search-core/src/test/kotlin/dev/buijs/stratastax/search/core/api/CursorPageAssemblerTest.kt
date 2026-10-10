@@ -16,11 +16,12 @@
  */
 package dev.buijs.stratastax.search.core.api
 
+import dev.buijs.stratastax.entity.core.api.Sort
+import dev.buijs.stratastax.entity.core.api.SortDirection
+import dev.buijs.stratastax.entity.core.api.SortField
 import dev.buijs.stratastax.search.core.spi.CursorCodec
 import dev.buijs.stratastax.search.core.spi.CursorElement
 import dev.buijs.stratastax.search.core.spi.CursorKeyExtractor
-import dev.buijs.stratastax.search.core.spi.SortDirection
-import dev.buijs.stratastax.search.core.spi.SortField
 import dev.buijs.stratastax.search.testdata.scoreField
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -32,6 +33,7 @@ class CursorPageAssemblerTest {
     /** Encodes a cursor readably: `A:b` is the page after item b, `B:a` the page before item a. */
     private val codec =
         object : CursorCodec {
+
             override fun decode(cursor: String): CursorState? = null
 
             override fun encode(cursor: CursorState): String =
@@ -65,13 +67,15 @@ class CursorPageAssemblerTest {
                 sort = sort,
                 filter = null,
                 cursor =
-                    if (cursor == "NONE") null
-                    else
+                    if (cursor == "NONE") {
+                        null
+                    } else {
                         CursorState(
                             listOf(CursorElement.StringValue("x")),
                             "hash",
                             CursorDirection.valueOf(cursor),
-                        ),
+                        )
+                    },
             )
 
         val page =
@@ -114,9 +118,11 @@ class CursorPageAssemblerTest {
     }
 
     private class RecordingCodec {
+
         val encoded = mutableListOf<CursorState>()
         val codec =
             object : CursorCodec {
+
                 override fun decode(cursor: String): CursorState? = null
 
                 override fun encode(cursor: CursorState): String {
@@ -140,13 +146,15 @@ class CursorPageAssemblerTest {
                 sort = sort,
                 filter = null,
                 cursor =
-                    if (cursor == "NONE") null
-                    else
+                    if (cursor == "NONE") {
+                        null
+                    } else {
                         CursorState(
                             listOf(CursorElement.StringValue("x")),
                             "hash",
                             CursorDirection.valueOf(cursor),
-                        ),
+                        )
+                    },
             )
 
         val page = CursorPageAssembler(codec).assemble(search, Page(listOf("a", "b"), true), keys)
@@ -163,13 +171,15 @@ class CursorPageAssemblerTest {
                 sort = sort,
                 filter = null,
                 cursor =
-                    if (cursor == "NONE") null
-                    else
+                    if (cursor == "NONE") {
+                        null
+                    } else {
                         CursorState(
                             listOf(CursorElement.StringValue("x")),
                             "hash",
                             CursorDirection.valueOf(cursor),
-                        ),
+                        )
+                    },
             )
 
         val page = CursorPageAssembler(codec).assemble(search, Page(emptyList(), false), keys)

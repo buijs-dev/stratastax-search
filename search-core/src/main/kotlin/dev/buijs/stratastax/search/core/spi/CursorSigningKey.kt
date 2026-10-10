@@ -18,5 +18,6 @@ package dev.buijs.stratastax.search.core.spi
 
 /** Supplies the HMAC signing key used to prevent cursor tampering. */
 fun interface CursorSigningKey {
+
     fun bytes(): ByteArray
 }

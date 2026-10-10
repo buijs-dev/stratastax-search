@@ -17,14 +17,13 @@
 package dev.buijs.stratastax.search.core.app.sort
 
 import dev.buijs.stratastax.entity.core.api.EntityField
+import dev.buijs.stratastax.entity.core.api.Sort
+import dev.buijs.stratastax.entity.core.api.SortDirection
+import dev.buijs.stratastax.entity.core.api.SortField
 import dev.buijs.stratastax.search.core.api.SearchException
-import dev.buijs.stratastax.search.core.api.Sort
 import dev.buijs.stratastax.search.core.app.SearchFieldCache
 import dev.buijs.stratastax.search.core.app.validate
 import dev.buijs.stratastax.search.core.spi.SearchConfiguration
-import dev.buijs.stratastax.search.core.spi.SortDirection
-import dev.buijs.stratastax.search.core.spi.SortDirection.Companion.of
-import dev.buijs.stratastax.search.core.spi.SortField
 import dev.buijs.stratastax.search.core.spi.SortParser
 
 private const val DEFAULT_SORT_DIRECTION = "ASC"
@@ -46,7 +45,10 @@ internal class OrderedMultivaluedSortParser : SortParser {
      * @return The resolved [Sort].
      * @throws SearchException If [value] is non-null but blank, malformed, or invalid.
      */
-    override fun parse(value: String?, configuration: SearchConfiguration): Sort =
+    override fun parse(
+        value: String?,
+        configuration: SearchConfiguration,
+    ): Sort =
         Sort(
             fields =
                 appendTiebreaker(
@@ -57,18 +59,21 @@ internal class OrderedMultivaluedSortParser : SortParser {
                         } else {
                             parseExplicitSort(value, configuration)
                         },
-                )
+                ),
         )
 }
 
-private fun parseExplicitSort(value: String, configuration: SearchConfiguration): List<SortField> {
+private fun parseExplicitSort(
+    value: String,
+    configuration: SearchConfiguration,
+): List<SortField> {
     validate(value.isNotBlank()) { "Sort parameter must not be blank" }
+
     return value
         .split(",")
         .mapIndexed { index, expression ->
             parseField(expression = expression, index = index, configuration = configuration)
-        }
-        .also(::ensureNoDuplicateFields)
+        }.also(::ensureNoDuplicateFields)
 }
 
 private fun parseField(
@@ -101,7 +106,14 @@ private fun parseField(
 
     validate(field.sortable) { "Field '$fieldName' is not sortable" }
 
-    return SortField(field, of(directionValue, fieldName))
+    val direction =
+        try {
+            SortDirection.of(directionValue, fieldName)
+        } catch (e: IllegalArgumentException) {
+            throw SearchException(e.message ?: "Invalid sort direction '$directionValue'", e)
+        }
+
+    return SortField(field, direction)
 }
 
 private fun ensureNoDuplicateFields(fields: List<SortField>) {
@@ -124,7 +136,10 @@ private fun ensureNoDuplicateFields(fields: List<SortField>) {
  * @return [fields] unchanged if it already includes [tiebreaker], otherwise [fields] with the
  *   tiebreaker appended in ascending order.
  */
-internal fun appendTiebreaker(fields: List<SortField>, tiebreaker: EntityField): List<SortField> =
+internal fun appendTiebreaker(
+    fields: List<SortField>,
+    tiebreaker: EntityField,
+): List<SortField> =
     when {
         fields.any { it.field.name.equals(tiebreaker.name, ignoreCase = true) } -> fields
         else -> fields + SortField(tiebreaker, SortDirection.ASC)

@@ -17,14 +17,14 @@
 package dev.buijs.stratastax.search.core.spi
 
 import dev.buijs.stratastax.search.core.api.SearchException
-import java.math.BigDecimal
-import java.time.Instant
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
+import java.math.BigDecimal
+import java.time.Instant
 
 class CursorElementTest {
 
@@ -128,7 +128,7 @@ class CursorElementTest {
         @ParameterizedTest
         @ValueSource(strings = ["True", "FALSE", "1", "0", "yes", ""])
         fun `should throw exception when restoring BooleanValue from non-strict string`(
-            invalidInput: String
+            invalidInput: String,
         ) {
             assertThatThrownBy { CursorElement.BooleanValue.of(invalidInput) }
                 .isInstanceOf(IllegalArgumentException::class.java)
@@ -167,7 +167,7 @@ class CursorElementTest {
         @ParameterizedTest
         @ValueSource(strings = ["1700000000", "1700000000-123456789", "invalid"])
         fun `should throw SearchException when restoring TimestampValue without comma delimiter`(
-            invalidInput: String
+            invalidInput: String,
         ) {
             assertThatThrownBy { CursorElement.TimestampValue.of(invalidInput) }
                 .isInstanceOf(SearchException::class.java)

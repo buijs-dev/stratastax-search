@@ -18,30 +18,35 @@ package dev.buijs.stratastax.search.core.app.filter
 
 import dev.buijs.stratastax.entity.core.api.EntityField
 import dev.buijs.stratastax.entity.core.api.EntityFieldType
+import dev.buijs.stratastax.entity.core.api.Sort
+import dev.buijs.stratastax.entity.core.api.SortDirection
+import dev.buijs.stratastax.entity.core.api.SortField
 import dev.buijs.stratastax.search.core.api.CriteriaHash
 import dev.buijs.stratastax.search.core.api.SearchException
-import dev.buijs.stratastax.search.core.api.Sort
-import dev.buijs.stratastax.search.core.spi.SortDirection
-import dev.buijs.stratastax.search.core.spi.SortField
 import dev.buijs.stratastax.search.core.spi.StandardSearchConfiguration
 import dev.buijs.stratastax.search.testdata.nameField
 import dev.buijs.stratastax.search.testdata.testSearchConfiguration
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import java.util.*
 
 /** Syntax and semantic errors of the RSQL parser, and the filter types the main tests skip. */
 class RsqlFilterParserErrorTest {
 
     private val parser = RsqlFilterParser()
 
-    private fun parse(value: String, parser: RsqlFilterParser = this.parser) =
-        parser.parse(value, testSearchConfiguration)
+    private fun parse(
+        value: String,
+        parser: RsqlFilterParser = this.parser,
+    ) = parser.parse(value, testSearchConfiguration)
 
-    private fun assertRejected(value: String, message: String) {
+    private fun assertRejected(
+        value: String,
+        message: String,
+    ) {
         assertThatThrownBy { parse(value) }
             .isInstanceOf(SearchException::class.java)
             .hasMessage(message)
@@ -76,7 +81,10 @@ class RsqlFilterParserErrorTest {
                 "status==GONE          | Invalid enum value 'GONE' for field 'status'. Allowed values: ACTIVE, PENDING, COMPLETED",
             ],
     )
-    fun `invalid filters are rejected with a precise message`(query: String, message: String) {
+    fun `invalid filters are rejected with a precise message`(
+        query: String,
+        message: String,
+    ) {
         assertRejected(query, message)
     }
 

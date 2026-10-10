@@ -18,8 +18,8 @@ package dev.buijs.stratastax.search.core.app.sort
 
 import dev.buijs.stratastax.entity.core.api.EntityField
 import dev.buijs.stratastax.entity.core.api.EntityFieldType
+import dev.buijs.stratastax.entity.core.api.SortDirection
 import dev.buijs.stratastax.search.core.api.SearchException
-import dev.buijs.stratastax.search.core.spi.SortDirection
 import dev.buijs.stratastax.search.testdata.activeField
 import dev.buijs.stratastax.search.testdata.internalNotesField
 import dev.buijs.stratastax.search.testdata.nameField
@@ -139,7 +139,7 @@ class OrderedMultivaluedSortParserTest {
             assertThatThrownBy { parse("score:UP") }
                 .isInstanceOf(SearchException::class.java)
                 .hasMessage(
-                    "Invalid sort direction 'UP' for field 'score', expected 'ASC' or 'DESC'"
+                    "Invalid sort direction 'UP' for field 'score', expected 'ASC' or 'DESC'",
                 )
         }
 

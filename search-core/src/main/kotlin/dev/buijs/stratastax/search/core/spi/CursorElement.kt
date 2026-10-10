@@ -42,13 +42,17 @@ sealed class CursorElement {
     fun encode(): String = "${prefix()}$TYPE_VALUE_DELIMITER${serialize()}"
 
     /** A cursor element wrapper for text-based values. */
-    data class StringValue(val value: String) : CursorElement() {
+    data class StringValue(
+        val value: String,
+    ) : CursorElement() {
+
         override fun prefix(): String = TYPE_STRING
 
         override fun serialize(): String =
             value.replace("%", "%25").replace(COMPONENT_DELIMITER, "%7C")
 
         companion object {
+
             /** Restores a [StringValue] from its serialized string representation. */
             fun of(value: String): StringValue =
                 StringValue(value.replace("%7C", COMPONENT_DELIMITER).replace("%25", "%"))
@@ -56,12 +60,16 @@ sealed class CursorElement {
     }
 
     /** A cursor element wrapper for high-precision numeric values. */
-    data class NumberValue(val value: BigDecimal) : CursorElement() {
+    data class NumberValue(
+        val value: BigDecimal,
+    ) : CursorElement() {
+
         override fun prefix(): String = TYPE_NUMBER
 
         override fun serialize(): String = value.toPlainString()
 
         companion object {
+
             /** Creates a [NumberValue] from a serialized numeric string. */
             fun of(value: String): NumberValue = NumberValue(BigDecimal(value))
 
@@ -71,24 +79,32 @@ sealed class CursorElement {
     }
 
     /** A cursor element wrapper for boolean flags. */
-    data class BooleanValue(val value: Boolean) : CursorElement() {
+    data class BooleanValue(
+        val value: Boolean,
+    ) : CursorElement() {
+
         override fun prefix(): String = TYPE_BOOLEAN
 
         override fun serialize(): String = "$value"
 
         companion object {
+
             /** Restores a [BooleanValue] from its string representation. */
             fun of(value: String): BooleanValue = BooleanValue(value.toBooleanStrict())
         }
     }
 
     /** A cursor element wrapper for point-in-time timestamp values. */
-    data class TimestampValue(val value: Instant) : CursorElement() {
+    data class TimestampValue(
+        val value: Instant,
+    ) : CursorElement() {
+
         override fun prefix(): String = TYPE_TIMESTAMP
 
         override fun serialize(): String = "${value.epochSecond}$TIMESTAMP_DELIMITER${value.nano}"
 
         companion object {
+
             private const val TIMESTAMP_DELIMITER = ","
 
             /**
@@ -110,6 +126,7 @@ sealed class CursorElement {
 
     /** Represents an explicitly absent or null value in a cursor. */
     data object NullValue : CursorElement() {
+
         override fun prefix(): String = TYPE_NULL
 
         override fun serialize(): String = ""
@@ -123,7 +140,10 @@ sealed class CursorElement {
      * Order of [values] is preserved. A `Set` has no stable iteration order, so sort it first if
      * you need deterministic round-tripping.
      */
-    data class ListValue(val values: List<CursorElement>) : CursorElement() {
+    data class ListValue(
+        val values: List<CursorElement>,
+    ) : CursorElement() {
+
         override fun prefix(): String = TYPE_LIST
 
         override fun serialize(): String =
@@ -133,6 +153,7 @@ sealed class CursorElement {
             }
 
         companion object {
+
             private const val LIST_ITEM_LENGTH_DELIMITER = ":"
 
             /**
@@ -148,25 +169,29 @@ sealed class CursorElement {
                 while (i < value.length) {
                     val colon = value.indexOf(LIST_ITEM_LENGTH_DELIMITER, i)
                     validate(colon != -1) { "Invalid list cursor element format: $value" }
+
                     val length =
                         value.substring(i, colon).toIntOrNull()
                             ?: throw SearchException(
-                                "Invalid list cursor element length in: $value"
+                                "Invalid list cursor element length in: $value",
                             )
                     val itemStart = colon + 1
                     val itemEnd = itemStart + length
                     validate(itemEnd <= value.length) {
                         "Invalid list cursor element format: $value"
                     }
+
                     items += CursorElement.of(value.substring(itemStart, itemEnd))
                     i = itemEnd
                 }
+
                 return ListValue(items)
             }
         }
     }
 
     companion object {
+
         /** Delimiter separating individual top-level components in the overall cursor payload. */
         const val COMPONENT_DELIMITER = "|"
 
@@ -235,10 +260,13 @@ fun Any?.toCursorElement(
     registry: CursorValueFactoryRegistry = CursorValueFactoryRegistry.default,
 ): CursorElement =
     when (this) {
-        null -> CursorElement.NullValue
-        is Iterable<*> ->
+        null -> {
+            CursorElement.NullValue
+        }
+        is Iterable<*> -> {
             CursorElement.ListValue(this.map { it.toCursorElement(fieldName, registry) })
-        else ->
+        }
+        else -> {
             registry.convert(this, fieldName)
                 ?: throw SearchException(
                     "field(\"$fieldName\") - can't convert a ${this::class.simpleName} " +
@@ -246,6 +274,7 @@ fun Any?.toCursorElement(
                         "CursorValueFactory<${this::class.simpleName}> bean " +
                         "(quarkus-starter) or pass a CursorValueFactoryRegistry entry " +
                         "for it, or call .toString() yourself first if this is a " +
-                        "wrapper type."
+                        "wrapper type.",
                 )
+        }
     }

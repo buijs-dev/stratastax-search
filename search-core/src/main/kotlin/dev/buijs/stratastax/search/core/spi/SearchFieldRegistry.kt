@@ -28,10 +28,14 @@ import kotlin.reflect.KProperty
  * @throws dev.buijs.stratastax.search.core.api.SearchException On access if no field with that name
  *   is configured.
  */
-open class SearchFieldRegistry(private val configuration: SearchConfiguration) :
-    ReadOnlyProperty<Any?, EntityField> {
+open class SearchFieldRegistry(
+    private val configuration: SearchConfiguration,
+) : ReadOnlyProperty<Any?, EntityField> {
 
-    override fun getValue(thisRef: Any?, property: KProperty<*>): EntityField =
+    override fun getValue(
+        thisRef: Any?,
+        property: KProperty<*>,
+    ): EntityField =
         valueOrThrow(configuration.fields.firstOrNull { it.name == property.name }) {
             "No field '${property.name}' configured in this SearchConfiguration. " +
                 "Check that field(\"${property.name}\") { ... } " +

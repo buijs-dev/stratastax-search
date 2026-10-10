@@ -16,7 +16,7 @@
  */
 package dev.buijs.stratastax.search.core.spi
 
-import dev.buijs.stratastax.search.core.api.Sort
+import dev.buijs.stratastax.entity.core.api.Sort
 
 /** Parser interface for converting a raw sort query string into a structured [Sort] instance. */
 interface SortParser {
@@ -29,9 +29,12 @@ interface SortParser {
      * @param configuration The [SearchConfiguration] defining known and sortable fields, plus the
      *   tiebreaker field appended to every result.
      * @return A [Sort] containing the resolved list of
-     *   [dev.buijs.stratastax.search.core.spi.SortField]s, always ending with the tiebreaker field.
+     *   [dev.buijs.stratastax.entity.core.api.SortField]s, always ending with the tiebreaker field.
      * @throws dev.buijs.stratastax.search.core.api.SearchException If [value] is blank, malformed,
      *   references an unknown or non-sortable field, or contains duplicate fields.
      */
-    fun parse(value: String?, configuration: SearchConfiguration): Sort
+    fun parse(
+        value: String?,
+        configuration: SearchConfiguration,
+    ): Sort
 }

@@ -17,28 +17,35 @@
 package dev.buijs.stratastax.search.core.spi
 
 import dev.buijs.stratastax.search.core.api.SearchException
-import java.math.BigDecimal
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
 
 internal class CursorValueFactoryRegistryTest {
 
     private enum class Status {
+
         ACTIVE,
         INACTIVE,
     }
 
-    private data class WrappedId(val value: Int)
+    private data class WrappedId(
+        val value: Int,
+    )
 
     private fun <T : Any> factory(
         forType: kotlin.reflect.KClass<T>,
         block: (T) -> CursorElement,
     ): CursorValueFactory<T> =
         object : CursorValueFactory<T> {
+
             override val type = forType
 
-            override fun convert(value: T, fieldName: String): CursorElement = block(value)
+            override fun convert(
+                value: T,
+                fieldName: String,
+            ): CursorElement = block(value)
         }
 
     @Test
@@ -60,11 +67,13 @@ internal class CursorValueFactoryRegistryTest {
     @Test
     fun `a registered factory for a custom type is used`() {
         val registry =
-            CursorValueFactoryRegistry.builder()
+            CursorValueFactoryRegistry
+                .builder()
                 .register(
-                    factory(WrappedId::class) { CursorElement.NumberValue(it.value.toBigDecimal()) }
-                )
-                .build()
+                    factory(
+                        WrappedId::class,
+                    ) { CursorElement.NumberValue(it.value.toBigDecimal()) },
+                ).build()
 
         assertThat(registry.convert(WrappedId(42), "x"))
             .isEqualTo(CursorElement.NumberValue(BigDecimal.valueOf(42)))
@@ -73,18 +82,19 @@ internal class CursorValueFactoryRegistryTest {
     @Test
     fun `registering two factories for the same type throws`() {
         assertThatThrownBy {
-                CursorValueFactoryRegistry.builder()
-                    .register(factory(String::class) { CursorElement.StringValue(it) })
-                    .register(factory(String::class) { CursorElement.StringValue(it) })
-            }
-            .isInstanceOf(SearchException::class.java)
+            CursorValueFactoryRegistry
+                .builder()
+                .register(factory(String::class) { CursorElement.StringValue(it) })
+                .register(factory(String::class) { CursorElement.StringValue(it) })
+        }.isInstanceOf(SearchException::class.java)
             .hasMessageContaining("String")
     }
 
     @Test
     fun `an enum with no exact match falls back to the Enum sentinel entry`() {
         val registry =
-            CursorValueFactoryRegistry.builder()
+            CursorValueFactoryRegistry
+                .builder()
                 .register(factory(Enum::class) { CursorElement.StringValue("enum:${it.name}") })
                 .build()
 
@@ -95,7 +105,8 @@ internal class CursorValueFactoryRegistryTest {
     @Test
     fun `an exact match for a concrete enum type wins over the Enum sentinel`() {
         val registry =
-            CursorValueFactoryRegistry.builder()
+            CursorValueFactoryRegistry
+                .builder()
                 .register(factory(Enum::class) { CursorElement.StringValue("sentinel") })
                 .register(factory(Status::class) { CursorElement.StringValue("exact:${it.name}") })
                 .build()
@@ -107,7 +118,8 @@ internal class CursorValueFactoryRegistryTest {
     @Test
     fun `a Map with no exact match falls back to the Map sentinel entry`() {
         val registry =
-            CursorValueFactoryRegistry.builder()
+            CursorValueFactoryRegistry
+                .builder()
                 .register(factory(Map::class) { CursorElement.StringValue("map:${it.size}") })
                 .build()
 
@@ -123,7 +135,8 @@ internal class CursorValueFactoryRegistryTest {
         // lookup would always miss the empty-map case, which is exactly the
         // shape of the original bug report this fallback exists to fix.
         val registry =
-            CursorValueFactoryRegistry.builder()
+            CursorValueFactoryRegistry
+                .builder()
                 .register(factory(Map::class) { CursorElement.StringValue("map:${it.size}") })
                 .build()
 
@@ -134,12 +147,12 @@ internal class CursorValueFactoryRegistryTest {
     @Test
     fun `an exact match for a concrete Map type wins over the Map sentinel`() {
         val registry =
-            CursorValueFactoryRegistry.builder()
+            CursorValueFactoryRegistry
+                .builder()
                 .register(factory(Map::class) { CursorElement.StringValue("sentinel") })
                 .register(
-                    factory(LinkedHashMap::class) { CursorElement.StringValue("exact:${it.size}") }
-                )
-                .build()
+                    factory(LinkedHashMap::class) { CursorElement.StringValue("exact:${it.size}") },
+                ).build()
 
         assertThat(registry.convert(linkedMapOf("color" to "red"), "x"))
             .isEqualTo(CursorElement.StringValue("exact:1"))

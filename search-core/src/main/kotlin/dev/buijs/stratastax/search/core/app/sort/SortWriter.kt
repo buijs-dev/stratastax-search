@@ -16,13 +16,13 @@
  */
 package dev.buijs.stratastax.search.core.app.sort
 
+import dev.buijs.stratastax.entity.core.api.Sort
+import dev.buijs.stratastax.entity.core.api.SortDirection
+import dev.buijs.stratastax.entity.core.api.SortField
 import dev.buijs.stratastax.search.core.api.SearchException
-import dev.buijs.stratastax.search.core.api.Sort
 import dev.buijs.stratastax.search.core.app.SearchFieldCache
 import dev.buijs.stratastax.search.core.app.validate
 import dev.buijs.stratastax.search.core.spi.SearchConfiguration
-import dev.buijs.stratastax.search.core.spi.SortDirection
-import dev.buijs.stratastax.search.core.spi.SortField
 
 /**
  * Writes a resolved [Sort] as `field:DIRECTION,...` and reads it back.
@@ -37,15 +37,20 @@ internal object SortWriter {
     fun write(sort: Sort): String =
         sort.fields.joinToString(",") { "${it.field.name}:${it.direction}" }
 
-    fun read(text: String, configuration: SearchConfiguration): Sort =
+    fun read(
+        text: String,
+        configuration: SearchConfiguration,
+    ): Sort =
         Sort(
             text.split(",").map { part ->
                 val (name, direction) = part.split(":", limit = 2).let { it[0] to it.getOrNull(1) }
+
                 validate(direction != null) { "Invalid sort in cursor: '$part'" }
+
                 val field =
                     SearchFieldCache.find(name, configuration)
                         ?: throw SearchException("Unknown sort field '$name' in cursor")
                 SortField(field, SortDirection.of(direction!!, name))
-            }
+            },
         )
 }

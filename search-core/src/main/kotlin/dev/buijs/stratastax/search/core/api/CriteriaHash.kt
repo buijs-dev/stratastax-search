@@ -16,6 +16,7 @@
  */
 package dev.buijs.stratastax.search.core.api
 
+import dev.buijs.stratastax.entity.core.api.Sort
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.security.MessageDigest
 
@@ -29,38 +30,50 @@ private val log = KotlinLogging.logger {}
 object CriteriaHash {
 
     /** Returns the hex SHA-256 fingerprint of [sort] and [filter]. */
-    fun of(sort: Sort, filter: Filter?): String {
+    fun of(
+        sort: Sort,
+        filter: Filter?,
+    ): String {
         log.debug { "Creating criteria hash for sort=$sort and filter=$filter" }
-        val canonical = buildString {
-            append("sort=")
-            sort.fields
-                .map { "${lengthPrefixed(it.field.name)}:${it.direction};" }
-                .forEach(this::append)
-            append("|filter=")
-            filter?.let { append(canonicalize(it.root)) }
-        }
+
+        val canonical =
+            buildString {
+                append("sort=")
+                sort.fields
+                    .map { "${lengthPrefixed(it.field.name)}:${it.direction};" }
+                    .forEach(this::append)
+                append("|filter=")
+                filter?.let { append(canonicalize(it.root)) }
+            }
+
         return sha256Hex(canonical)
     }
 
     private fun canonicalize(expression: FilterExpression): String =
         when (expression) {
-            is AndExpression ->
+            is AndExpression -> {
                 "AND(" + expression.children.joinToString(",") { canonicalize(it) } + ")"
+            }
 
-            is OrExpression ->
+            is OrExpression -> {
                 "OR(" + expression.children.joinToString(",") { canonicalize(it) } + ")"
+            }
 
-            is ComparisonExpression ->
+            is ComparisonExpression -> {
                 "${lengthPrefixed(expression.field.name)}${expression.operator}" +
                     canonicalizeValue(expression.value)
+            }
 
-            is InExpression ->
+            is InExpression -> {
                 "${lengthPrefixed(expression.field.name)}${expression.operator}[" +
                     expression.values.joinToString(",") { canonicalizeValue(it) } +
                     "]"
+            }
 
-            is LikeExpression ->
-                "${lengthPrefixed(expression.field.name)}=like=${lengthPrefixed(expression.pattern)}"
+            is LikeExpression -> {
+                "${lengthPrefixed(expression.field.name)}${expression.operatorToken}" +
+                    lengthPrefixed(expression.pattern)
+            }
         }
 
     private fun canonicalizeValue(value: FilterValue): String =

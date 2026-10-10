@@ -51,6 +51,7 @@ class FilterOperatorTest {
             .hasSize(ComparisonOperator.entries.size + InOperator.entries.size)
 
         ComparisonOperator.entries.forEach { assertThat(FilterOperator.of(it.token)).isSameAs(it) }
+
         InOperator.entries.forEach { assertThat(FilterOperator.of(it.token)).isSameAs(it) }
     }
 
@@ -71,12 +72,11 @@ class FilterOperatorTest {
     @EnumSource(EntityFieldType::class)
     fun `comparison operators are restricted by field type`(type: EntityFieldType) {
         listOf(
-                ComparisonOperator.GREATER_THAN,
-                ComparisonOperator.GREATER_THAN_OR_EQUAL,
-                ComparisonOperator.LESS_THAN,
-                ComparisonOperator.LESS_THAN_OR_EQUAL,
-            )
-            .forEach { assertThat(it.allowed(type)).isEqualTo(type in dateTimeOrNumber) }
+            ComparisonOperator.GREATER_THAN,
+            ComparisonOperator.GREATER_THAN_OR_EQUAL,
+            ComparisonOperator.LESS_THAN,
+            ComparisonOperator.LESS_THAN_OR_EQUAL,
+        ).forEach { assertThat(it.allowed(type)).isEqualTo(type in dateTimeOrNumber) }
 
         assertThat(ComparisonOperator.LIKE.allowed(type)).isEqualTo(type == EntityFieldType.STRING)
         assertThat(ComparisonOperator.EQUALS.allowed(type)).isTrue()
@@ -86,7 +86,7 @@ class FilterOperatorTest {
     @ParameterizedTest
     @EnumSource(EntityFieldType::class)
     fun `set operators are not allowed for boolean, temporal and json fields`(
-        type: EntityFieldType
+        type: EntityFieldType,
     ) {
         InOperator.entries.forEach {
             assertThat(it.allowed(type)).isEqualTo(type !in noSetMembership)

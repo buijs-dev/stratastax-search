@@ -18,18 +18,22 @@ package dev.buijs.stratastax.search.core.spi
 
 import dev.buijs.stratastax.entity.core.api.EntityField
 import dev.buijs.stratastax.entity.core.api.EntityFieldType
+import dev.buijs.stratastax.entity.core.api.Sort
+import dev.buijs.stratastax.entity.core.api.SortDirection
+import dev.buijs.stratastax.entity.core.api.SortField
+import dev.buijs.stratastax.entity.core.api.asc
+import dev.buijs.stratastax.entity.core.api.desc
 import dev.buijs.stratastax.search.core.api.SearchException
-import dev.buijs.stratastax.search.core.api.Sort
 import dev.buijs.stratastax.search.core.app.valueOrThrow
 import dev.buijs.stratastax.search.testdata.nameField
 import dev.buijs.stratastax.search.testdata.nameSortField
 import dev.buijs.stratastax.search.testdata.scoreField
 import dev.buijs.stratastax.search.testdata.testSearchConfiguration
-import kotlin.reflect.KClass
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import kotlin.reflect.KClass
 
 class SpiSupportTest {
 
@@ -65,9 +69,9 @@ class SpiSupportTest {
         @Test
         fun `an unknown direction is rejected`() {
             assertThatThrownBy { SortDirection.of("sideways", "name") }
-                .isInstanceOf(SearchException::class.java)
+                .isInstanceOf(IllegalArgumentException::class.java)
                 .hasMessage(
-                    "Invalid sort direction 'sideways' for field 'name', expected 'ASC' or 'DESC'"
+                    "Invalid sort direction 'sideways' for field 'name', expected 'ASC' or 'DESC'",
                 )
         }
     }
@@ -96,7 +100,7 @@ class SpiSupportTest {
             assertThatThrownBy { extractors.filterElementsFor("abc", sort) }
                 .isInstanceOf(SearchException::class.java)
                 .hasMessageContaining(
-                    "No cursorValue extractor configured for sortable field 'other'"
+                    "No cursorValue extractor configured for sortable field 'other'",
                 )
         }
 

@@ -24,7 +24,9 @@ import dev.buijs.stratastax.search.core.app.validate
  *
  * @property root The main expression ([FilterExpression]) constituting the root of the filter tree.
  */
-data class Filter(val root: FilterExpression)
+data class Filter(
+    val root: FilterExpression,
+)
 
 /** Any node of a [Filter] tree. Sealed so backends can match on it exhaustively. */
 sealed interface FilterExpression
@@ -35,7 +37,10 @@ sealed interface FilterExpression
  * @property children The list of child expressions to evaluate.
  * @throws SearchException If [children] contains fewer than 2 expressions.
  */
-data class AndExpression(val children: List<FilterExpression>) : FilterExpression {
+data class AndExpression(
+    val children: List<FilterExpression>,
+) : FilterExpression {
+
     init {
         validate(children.size >= 2) { "AndExpression requires at least 2 child expressions." }
     }
@@ -47,7 +52,10 @@ data class AndExpression(val children: List<FilterExpression>) : FilterExpressio
  * @property children The list of child expressions to evaluate.
  * @throws SearchException If [children] contains fewer than 2 expressions.
  */
-data class OrExpression(val children: List<FilterExpression>) : FilterExpression {
+data class OrExpression(
+    val children: List<FilterExpression>,
+) : FilterExpression {
+
     init {
         validate(children.size >= 2) { "OrExpression requires at least 2 child expressions." }
     }
@@ -79,6 +87,7 @@ data class InExpression(
     val operator: InOperator,
     val values: List<FilterValue>,
 ) : FilterExpression {
+
     init {
         validate(values.isNotEmpty()) { "In/Out expression requires a non-empty list of values." }
     }
@@ -89,5 +98,14 @@ data class InExpression(
  *
  * @property field The [EntityField] being matched.
  * @property pattern The pattern string to evaluate.
+ * @property ignoreCase Whether the match ignores case (`=ilike=`).
  */
-data class LikeExpression(val field: EntityField, val pattern: String) : FilterExpression
+data class LikeExpression(
+    val field: EntityField,
+    val pattern: String,
+    val ignoreCase: Boolean = false,
+) : FilterExpression
+
+/** The RSQL operator token of this expression: `=ilike=` when it ignores case, else `=like=`. */
+internal val LikeExpression.operatorToken: String
+    get() = if (ignoreCase) ComparisonOperator.ILIKE.token else ComparisonOperator.LIKE.token

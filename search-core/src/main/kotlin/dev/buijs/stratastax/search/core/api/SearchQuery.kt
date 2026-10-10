@@ -16,6 +16,8 @@
  */
 package dev.buijs.stratastax.search.core.api
 
+import dev.buijs.stratastax.entity.core.api.Sort
+
 /**
  * A validated, parsed search, ready to be translated for a backend.
  *

@@ -26,14 +26,14 @@ import dev.buijs.stratastax.search.core.spi.CursorElement.StringValue
 import dev.buijs.stratastax.search.core.spi.CursorSigningKey
 import io.mockk.every
 import io.mockk.mockk
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.Base64
+import java.util.*
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
 
 class HmacBase64CursorCodecTest {
 
@@ -136,9 +136,10 @@ class HmacBase64CursorCodecTest {
     @Test
     fun `decode should fail when signature is incorrect`() {
         // Given
-        val anotherSigningKey = CursorSigningKey {
-            "even-more-secret-key".toByteArray(Charsets.UTF_8)
-        }
+        val anotherSigningKey =
+            CursorSigningKey {
+                "even-more-secret-key".toByteArray(Charsets.UTF_8)
+            }
 
         val anotherCodec = HmacBase64CursorCodec(anotherSigningKey, "1")
 
@@ -273,12 +274,15 @@ class HmacBase64CursorCodecTest {
                     CursorDirection.BEFORE,
                     Instant.ofEpochSecond(1767225600),
                     CursorCriteria("name:ASC", null),
-                )
+                ),
             )
     }
 
     /** Applies [change] to the signature (the last component) of an encoded cursor. */
-    private fun rewrite(cursor: String, change: (String) -> String): String {
+    private fun rewrite(
+        cursor: String,
+        change: (String) -> String,
+    ): String {
         val decoded = String(Base64.getUrlDecoder().decode(cursor))
         val index = decoded.lastIndexOf('|')
         val tampered = decoded.substring(0, index + 1) + change(decoded.substring(index + 1))

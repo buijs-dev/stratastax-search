@@ -20,67 +20,82 @@ import dev.buijs.stratastax.search.core.api.FilterOperator
 import dev.buijs.stratastax.search.core.api.SearchException
 
 internal enum class RawType {
+
     SYMBOL, // ( ) ; ,
-    OPERATOR, // == != =gt= =ge= =lt= =le= =in= =out= =like=
+    OPERATOR, // == != =gt= =ge= =lt= =le= =in= =out= =like= =ilike=
     WORD, // unquoted field or value
     QUOTED_STRING, // "..." of '...'
 }
 
-internal data class RawToken(val type: RawType, val text: String, val position: Int)
+internal data class RawToken(
+    val type: RawType,
+    val text: String,
+    val position: Int,
+)
 
-internal class RawScanner(private val input: String) {
+internal class RawScanner(
+    private val input: String,
+) {
+
     private var pos = 0
     private val len = input.length
     private var justSawOperator = false
     private var inList = false
 
-    fun scan(): List<RawToken> = buildList {
-        while (pos < len) {
-            skipWhitespace()
-            if (pos >= len) break
+    fun scan(): List<RawToken> =
+        buildList {
+            while (pos < len) {
+                skipWhitespace()
+                if (pos >= len) break
 
-            val start = pos
-            val lenient = justSawOperator || inList
+                val start = pos
+                val lenient = justSawOperator || inList
 
-            val token =
-                when (val ch = input[pos]) {
-                    in "();," -> {
-                        pos++
-                        RawToken(RawType.SYMBOL, ch.toString(), start)
-                    }
-                    '"',
-                    '\'' -> RawToken(RawType.QUOTED_STRING, readQuoted(ch), start)
-                    '=',
-                    '!' -> {
-                        if (lenient) {
-                            RawToken(RawType.WORD, readWord(lenient = true), start)
-                        } else {
-                            RawToken(RawType.OPERATOR, readOperator(), start)
+                val token =
+                    when (val ch = input[pos]) {
+                        in "();," -> {
+                            pos++
+                            RawToken(RawType.SYMBOL, ch.toString(), start)
+                        }
+                        '"',
+                        '\'',
+                        -> {
+                            RawToken(RawType.QUOTED_STRING, readQuoted(ch), start)
+                        }
+                        '=',
+                        '!',
+                        -> {
+                            if (lenient) {
+                                RawToken(RawType.WORD, readWord(lenient = true), start)
+                            } else {
+                                RawToken(RawType.OPERATOR, readOperator(), start)
+                            }
+                        }
+                        else -> {
+                            RawToken(RawType.WORD, readWord(lenient = lenient), start)
                         }
                     }
-                    else -> RawToken(RawType.WORD, readWord(lenient = lenient), start)
-                }
 
-            when (token.type) {
-                RawType.OPERATOR -> {
-                    justSawOperator = true
-                    if (
-                        token.text.equals("=in=", ignoreCase = true) ||
-                            token.text.equals("=out=", ignoreCase = true)
-                    ) {
-                        inList = true
+                when (token.type) {
+                    RawType.OPERATOR -> {
+                        justSawOperator = true
+                        val isSetOperator = token.text.lowercase() in SET_OPERATORS
+                        if (isSetOperator) {
+                            inList = true
+                        }
+                    }
+                    RawType.SYMBOL -> {
+                        if (token.text == ")") inList = false
+                        justSawOperator = false
+                    }
+                    else -> {
+                        justSawOperator = false
                     }
                 }
-                RawType.SYMBOL -> {
-                    if (token.text == ")") inList = false
-                    justSawOperator = false
-                }
-                else -> justSawOperator = false
-            }
 
-            add(token)
+                add(token)
+            }
         }
-    }
 
     private fun readOperator(): String {
         return FilterOperator.values
@@ -95,6 +110,7 @@ internal class RawScanner(private val input: String) {
         while (pos < len && !input[pos].isWhitespace() && input[pos] !in stopChars) {
             pos++
         }
+
         return input.substring(start, pos)
     }
 
@@ -115,6 +131,7 @@ internal class RawScanner(private val input: String) {
                 sb.append(ch)
             }
         }
+
         throw SearchException("Unterminated string starting with $quote")
     }
 
@@ -122,3 +139,6 @@ internal class RawScanner(private val input: String) {
         while (pos < len && input[pos].isWhitespace()) pos++
     }
 }
+
+/** The RSQL operators followed by a parenthesized list of values. */
+private val SET_OPERATORS = setOf("=in=", "=out=")

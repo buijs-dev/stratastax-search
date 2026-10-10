@@ -22,5 +22,7 @@ package dev.buijs.stratastax.search.core.api
  *
  * Consumers should translate this into a `400 Bad Request` identifying the cursor as the cause.
  */
-class InvalidCursorException(message: String, cause: Throwable? = null) :
-    SearchException(message, cause)
+class InvalidCursorException(
+    message: String,
+    cause: Throwable? = null,
+) : SearchException(message, cause)

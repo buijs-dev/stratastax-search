@@ -22,9 +22,9 @@ import dev.buijs.stratastax.entity.core.api.EntityFieldType.DATETIME
 import dev.buijs.stratastax.entity.core.api.EntityFieldType.ENUM
 import dev.buijs.stratastax.entity.core.api.EntityFieldType.NUMBER
 import dev.buijs.stratastax.entity.core.api.EntityFieldType.STRING
+import dev.buijs.stratastax.entity.core.api.SortDirection
+import dev.buijs.stratastax.entity.core.api.SortField
 import dev.buijs.stratastax.search.core.spi.SearchConfiguration
-import dev.buijs.stratastax.search.core.spi.SortDirection
-import dev.buijs.stratastax.search.core.spi.SortField
 
 internal val playedAtField = EntityField("playedAt", DATETIME, filterable = true, sortable = true)
 
@@ -51,6 +51,7 @@ internal val statusSortField = SortField(statusField, SortDirection.ASC)
 
 internal val testSearchConfiguration =
     object : SearchConfiguration {
+
         override val defaultLimit = 10
         override val maxLimit = 30
         override val defaultSort = listOf(nameSortField, statusSortField)

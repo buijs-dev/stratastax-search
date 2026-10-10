@@ -17,6 +17,9 @@
 package dev.buijs.stratastax.search.core.spi
 
 import dev.buijs.stratastax.search.core.api.SearchException
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.sql.Timestamp
 import java.time.Instant
@@ -24,10 +27,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.UUID
-import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatThrownBy
-import org.junit.jupiter.api.Test
+import java.util.*
 
 /**
  * `toCursorElement` is what lets `cursorValue { }` (search-jooq) return a raw value instead of an
@@ -36,7 +36,9 @@ import org.junit.jupiter.api.Test
  */
 internal class ToCursorElementTest {
 
-    private data class WrappedId(val value: UUID)
+    private data class WrappedId(
+        val value: UUID,
+    )
 
     @Test
     fun `null converts to NullValue`() {
@@ -55,6 +57,7 @@ internal class ToCursorElementTest {
     }
 
     private enum class Status {
+
         ACTIVE,
         INACTIVE,
     }
@@ -102,7 +105,7 @@ internal class ToCursorElementTest {
         val localDate = LocalDate.of(2026, 1, 1)
         assertThat(localDate.toCursorElement("x"))
             .isEqualTo(
-                CursorElement.TimestampValue(localDate.atStartOfDay(ZoneOffset.UTC).toInstant())
+                CursorElement.TimestampValue(localDate.atStartOfDay(ZoneOffset.UTC).toInstant()),
             )
 
         val timestamp = Timestamp.from(instant)
@@ -123,8 +126,8 @@ internal class ToCursorElementTest {
         assertThat(listOf("a", "b").toCursorElement("x"))
             .isEqualTo(
                 CursorElement.ListValue(
-                    listOf(CursorElement.StringValue("a"), CursorElement.StringValue("b"))
-                )
+                    listOf(CursorElement.StringValue("a"), CursorElement.StringValue("b")),
+                ),
             )
     }
 
@@ -132,7 +135,7 @@ internal class ToCursorElementTest {
     fun `a Set converts to a ListValue of the converted items`() {
         assertThat(setOf(1).toCursorElement("x"))
             .isEqualTo(
-                CursorElement.ListValue(listOf(CursorElement.NumberValue(BigDecimal.valueOf(1))))
+                CursorElement.ListValue(listOf(CursorElement.NumberValue(BigDecimal.valueOf(1)))),
             )
     }
 
@@ -150,8 +153,8 @@ internal class ToCursorElementTest {
                     listOf(
                         CursorElement.ListValue(listOf(CursorElement.StringValue("a"))),
                         CursorElement.ListValue(emptyList()),
-                    )
-                )
+                    ),
+                ),
             )
     }
 
@@ -159,16 +162,19 @@ internal class ToCursorElementTest {
     fun `a custom registry can add support for an otherwise-unsupported type`() {
         val id = UUID.randomUUID()
         val registry =
-            CursorValueFactoryRegistry.builder()
+            CursorValueFactoryRegistry
+                .builder()
                 .register(
                     object : CursorValueFactory<WrappedId> {
+
                         override val type = WrappedId::class
 
-                        override fun convert(value: WrappedId, fieldName: String): CursorElement =
-                            CursorElement.StringValue(value.value.toString())
-                    }
-                )
-                .build()
+                        override fun convert(
+                            value: WrappedId,
+                            fieldName: String,
+                        ): CursorElement = CursorElement.StringValue(value.value.toString())
+                    },
+                ).build()
 
         assertThat(WrappedId(id).toCursorElement("x", registry))
             .isEqualTo(CursorElement.StringValue(id.toString()))
@@ -177,16 +183,19 @@ internal class ToCursorElementTest {
     @Test
     fun `a custom registry can override a standard type's conversion`() {
         val registry =
-            CursorValueFactoryRegistry.builder()
+            CursorValueFactoryRegistry
+                .builder()
                 .register(
                     object : CursorValueFactory<String> {
+
                         override val type = String::class
 
-                        override fun convert(value: String, fieldName: String): CursorElement =
-                            CursorElement.StringValue(value.uppercase())
-                    }
-                )
-                .build()
+                        override fun convert(
+                            value: String,
+                            fieldName: String,
+                        ): CursorElement = CursorElement.StringValue(value.uppercase())
+                    },
+                ).build()
 
         assertThat("hello".toCursorElement("x", registry))
             .isEqualTo(CursorElement.StringValue("HELLO"))

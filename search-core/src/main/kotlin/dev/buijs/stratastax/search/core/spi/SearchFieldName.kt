@@ -17,8 +17,8 @@
 package dev.buijs.stratastax.search.core.spi
 
 /**
- * Converts a dot-qualified field path into a single camelCase identifier, e.g. `"game.expansions.name"`
- * becomes `"gameExpansionsName"`.
+ * Converts a dot-qualified field path into a single camelCase identifier, e.g.
+ * `"game.expansions.name"` becomes `"gameExpansionsName"`.
  */
 fun String.toSearchFieldName(): String {
     val segments = split(".")

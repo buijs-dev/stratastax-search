@@ -31,5 +31,8 @@ interface FilterParser {
      * @throws dev.buijs.stratastax.search.core.api.SearchException If the query string contains
      *   syntax errors, unknown fields, or invalid operators.
      */
-    fun parse(value: String?, configuration: SearchConfiguration): Filter?
+    fun parse(
+        value: String?,
+        configuration: SearchConfiguration,
+    ): Filter?
 }

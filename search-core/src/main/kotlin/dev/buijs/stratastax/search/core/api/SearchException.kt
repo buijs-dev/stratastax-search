@@ -17,5 +17,7 @@
 package dev.buijs.stratastax.search.core.api
 
 /** Thrown when a search request, filter, sort or configuration is invalid. */
-open class SearchException(message: String, cause: Throwable? = null) :
-    RuntimeException(message, cause)
+open class SearchException(
+    message: String,
+    cause: Throwable? = null,
+) : RuntimeException(message, cause)

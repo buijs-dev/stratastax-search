@@ -21,7 +21,10 @@ package dev.buijs.stratastax.search.core.api
  *
  * @property hasMore Whether more items lie beyond [items] in the direction the page was read.
  */
-data class Page<T>(val items: List<T>, val hasMore: Boolean)
+data class Page<T>(
+    val items: List<T>,
+    val hasMore: Boolean,
+)
 
 /**
  * What the service returns: a [Page] with cursors added.

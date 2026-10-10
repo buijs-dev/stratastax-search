@@ -40,6 +40,7 @@ internal class HmacBase64CursorCodec(
 ) : CursorCodec {
 
     private companion object {
+
         const val HMAC_ALGORITHM = "HmacSHA256"
         val charset = Charsets.UTF_8
     }
@@ -50,40 +51,45 @@ internal class HmacBase64CursorCodec(
         ThreadLocal.withInitial { Mac.getInstance(HMAC_ALGORITHM).apply { init(keySpec) } }
 
     override fun encode(cursor: CursorState): String {
-        val payload = buildString {
-            append(version)
-            append(CursorElement.COMPONENT_DELIMITER)
-            append(cursor.hash)
-            append(CursorElement.COMPONENT_DELIMITER)
-            append(cursor.direction.code)
-            append(CursorElement.COMPONENT_DELIMITER)
-            append((cursor.issuedAt ?: clock.instant()).epochSecond)
-            append(CursorElement.COMPONENT_DELIMITER)
-            append(encodeCriteriaPart(cursor.criteria?.sort))
-            append(CursorElement.COMPONENT_DELIMITER)
-            append(encodeCriteriaPart(cursor.criteria?.filter))
-            for (element in cursor.values) {
+        val payload =
+            buildString {
+                append(version)
                 append(CursorElement.COMPONENT_DELIMITER)
-                append(element.encode())
+                append(cursor.hash)
+                append(CursorElement.COMPONENT_DELIMITER)
+                append(cursor.direction.code)
+                append(CursorElement.COMPONENT_DELIMITER)
+                append((cursor.issuedAt ?: clock.instant()).epochSecond)
+                append(CursorElement.COMPONENT_DELIMITER)
+                append(encodeCriteriaPart(cursor.criteria?.sort))
+                append(CursorElement.COMPONENT_DELIMITER)
+                append(encodeCriteriaPart(cursor.criteria?.filter))
+                for (element in cursor.values) {
+                    append(CursorElement.COMPONENT_DELIMITER)
+                    append(element.encode())
+                }
             }
-        }
 
         val payloadBytes = payload.toByteArray(charset)
         val signature = sign(payloadBytes)
-        val signedPayload = buildString {
-            append(payload)
-            append(CursorElement.COMPONENT_DELIMITER)
-            append(signature)
-        }
+        val signedPayload =
+            buildString {
+                append(payload)
+                append(CursorElement.COMPONENT_DELIMITER)
+                append(signature)
+            }
 
         return encoder.encodeToString(signedPayload.toByteArray(charset))
     }
 
     override fun decode(cursor: String): CursorState? =
         when (val result = tryToDecode(cursor)) {
-            is CursorDecodeAttempt.Success -> result.state
+            is CursorDecodeAttempt.Success -> {
+                result.state
+            }
             is CursorDecodeAttempt.Error -> {
                 logger.debug { "Cursor decode failed: $result" }
+
                 null
             }
         }
@@ -122,24 +128,24 @@ internal class HmacBase64CursorCodec(
         }
 
         val cursorHash =
-            reader.next() //
-            ?: return CursorDecodeAttempt.Error.MissingHash
+            reader.next()
+                ?: return CursorDecodeAttempt.Error.MissingHash
 
         val direction =
-            CursorDirection.ofCode(reader.next()) //
-            ?: return CursorDecodeAttempt.Error.BadDirection
+            CursorDirection.ofCode(reader.next())
+                ?: return CursorDecodeAttempt.Error.BadDirection
 
         val issuedAt =
             reader.next()?.toLongOrNull()?.let { Instant.ofEpochSecond(it) }
                 ?: return CursorDecodeAttempt.Error.BadIssuedAt
 
         val sortPart =
-            reader.next() //
-            ?: return CursorDecodeAttempt.Error.BadCriteria
+            reader.next()
+                ?: return CursorDecodeAttempt.Error.BadCriteria
 
         val filterPart =
-            reader.next() //
-            ?: return CursorDecodeAttempt.Error.BadCriteria
+            reader.next()
+                ?: return CursorDecodeAttempt.Error.BadCriteria
 
         val criteria =
             decodeCriteria(sortPart, filterPart).getOrElse {
@@ -150,8 +156,7 @@ internal class HmacBase64CursorCodec(
             runCatching { reader.remainingValues() }
                 .getOrElse {
                     return CursorDecodeAttempt.Error.BadCursorElement
-                }
-                .ifEmpty {
+                }.ifEmpty {
                     return CursorDecodeAttempt.Error.IncompleteCursor
                 }
 
@@ -163,23 +168,27 @@ internal class HmacBase64CursorCodec(
                     direction = direction,
                     issuedAt = issuedAt,
                     criteria = criteria,
-                )
+                ),
         )
     }
 
     private fun encodeCriteriaPart(part: String?): String =
         (part?.let { CursorElement.StringValue(it) } ?: CursorElement.NullValue).encode()
 
-    // A cursor built without criteria carries a null sort; otherwise sort is text, filter text or null.
-    private fun decodeCriteria(sortPart: String, filterPart: String): Result<CursorCriteria?> =
+    // A cursor built without criteria carries a null sort; otherwise sort is text, filter text or
+    // null.
+    private fun decodeCriteria(
+        sortPart: String,
+        filterPart: String,
+    ): Result<CursorCriteria?> =
         runCatching {
             val sort = CursorElement.of(sortPart)
             val filter = CursorElement.of(filterPart)
             when (sort) {
                 is CursorElement.NullValue -> null
                 is CursorElement.StringValue if
-                    (filter is CursorElement.StringValue || filter is CursorElement.NullValue)
-                 -> CursorCriteria(sort.value, (filter as? CursorElement.StringValue)?.value)
+                (filter is CursorElement.StringValue || filter is CursorElement.NullValue)
+                -> CursorCriteria(sort.value, (filter as? CursorElement.StringValue)?.value)
                 else -> throw IllegalArgumentException("Unexpected criteria elements")
             }
         }
@@ -191,9 +200,13 @@ internal class HmacBase64CursorCodec(
 }
 
 private sealed interface CursorDecodeAttempt {
-    data class Success(val state: CursorState) : CursorDecodeAttempt
+
+    data class Success(
+        val state: CursorState,
+    ) : CursorDecodeAttempt
 
     sealed interface Error : CursorDecodeAttempt {
+
         data object Blank : Error
 
         data object NotBase64 : Error
@@ -221,7 +234,10 @@ private sealed interface CursorDecodeAttempt {
 // Avoids short-circuiting string comparison, which could otherwise leak timing
 // information about how many leading characters of a forged signature are
 // correct.
-private fun constantTimeEquals(expected: String, actual: String): Boolean {
+private fun constantTimeEquals(
+    expected: String,
+    actual: String,
+): Boolean {
     if (expected.length != actual.length) {
         return false
     }
@@ -234,15 +250,19 @@ private fun constantTimeEquals(expected: String, actual: String): Boolean {
     return result == 0
 }
 
-private fun CursorReader.remainingValues(): List<CursorElement> = buildList {
-    var value = next()
-    while (value != null) {
-        add(CursorElement.of(value))
-        value = next()
+private fun CursorReader.remainingValues(): List<CursorElement> =
+    buildList {
+        var value = next()
+        while (value != null) {
+            add(CursorElement.of(value))
+            value = next()
+        }
     }
-}
 
-private class CursorReader(private val payload: String) {
+private class CursorReader(
+    private val payload: String,
+) {
+
     private var start = 0
 
     fun next(): String? {

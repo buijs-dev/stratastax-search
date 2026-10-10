@@ -16,6 +16,7 @@
  */
 package dev.buijs.stratastax.search.core.api
 
+import dev.buijs.stratastax.entity.core.api.Sort
 import dev.buijs.stratastax.search.core.app.filter.FilterWriter
 import dev.buijs.stratastax.search.core.app.sort.SortWriter
 import dev.buijs.stratastax.search.core.spi.CursorElement
@@ -49,23 +50,35 @@ data class CursorState(
  * @property sort The resolved sort, e.g. `playedAt:DESC,name:ASC`.
  * @property filter The filter in RSQL, or `null` when there was none.
  */
-data class CursorCriteria(val sort: String, val filter: String?) {
+data class CursorCriteria(
+    val sort: String,
+    val filter: String?,
+) {
+
     internal companion object {
+
         /** The canonical criteria of an already parsed [sort] and [filter]. */
-        fun of(sort: Sort, filter: Filter?) =
-            CursorCriteria(SortWriter.write(sort), filter?.let(FilterWriter::write))
+        fun of(
+            sort: Sort,
+            filter: Filter?,
+        ) = CursorCriteria(SortWriter.write(sort), filter?.let(FilterWriter::write))
     }
 }
 
 /** Which side of a cursor's position a page lies on, in the sort order. */
-enum class CursorDirection(internal val code: String) {
+enum class CursorDirection(
+    internal val code: String,
+) {
+
     /** The items after the cursor: the next page. */
     AFTER("A"),
 
     /** The items before the cursor: the previous page. */
-    BEFORE("B");
+    BEFORE("B"),
+    ;
 
     internal companion object {
+
         fun ofCode(code: String?): CursorDirection? = entries.firstOrNull { it.code == code }
     }
 }

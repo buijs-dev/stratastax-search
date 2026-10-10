@@ -29,11 +29,11 @@ import dev.buijs.stratastax.search.testdata.nameField
 import dev.buijs.stratastax.search.testdata.playedAtField
 import dev.buijs.stratastax.search.testdata.statusField
 import dev.buijs.stratastax.search.testdata.testSearchConfiguration
-import java.time.Instant
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import java.time.Instant
 
 class RsqlFilterParserTest {
 
@@ -88,6 +88,14 @@ class RsqlFilterParserTest {
         }
 
         @Test
+        fun `should parse ILIKE operator as a case-insensitive LikeExpression`() {
+            val filter = parser.parse("name=ilike=\"%alex%\"", testSearchConfiguration)
+
+            val expected = LikeExpression(field = nameField, pattern = "%alex%", ignoreCase = true)
+            assertThat(filter!!.root).isEqualTo(expected)
+        }
+
+        @Test
         fun `should parse AND with higher precedence than OR`() {
             // playedAt=gt=2026-01-01T00:00:00Z;status==COMPLETED,score=gt=100
             // Equivalent to: (playedAt > 2026 AND status == COMPLETED) OR
@@ -138,7 +146,7 @@ class RsqlFilterParserTest {
                         nameField,
                         ComparisonOperator.EQUALS,
                         FilterValue.NullValue,
-                    )
+                    ),
                 )
         }
 
@@ -150,7 +158,7 @@ class RsqlFilterParserTest {
                         nameField,
                         ComparisonOperator.NOT_EQUALS,
                         FilterValue.NullValue,
-                    )
+                    ),
                 )
         }
 
@@ -162,7 +170,7 @@ class RsqlFilterParserTest {
                         nameField,
                         ComparisonOperator.EQUALS,
                         FilterValue.StringValue("null"),
-                    )
+                    ),
                 )
         }
 
@@ -174,7 +182,7 @@ class RsqlFilterParserTest {
                         nameField,
                         ComparisonOperator.NOT_EQUALS,
                         FilterValue.StringValue("NULL"),
-                    )
+                    ),
                 )
         }
 
@@ -186,7 +194,7 @@ class RsqlFilterParserTest {
                         nameField,
                         InOperator.IN,
                         listOf(FilterValue.StringValue("null"), FilterValue.StringValue("x")),
-                    )
+                    ),
                 )
         }
 

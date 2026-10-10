@@ -16,6 +16,7 @@
  */
 package dev.buijs.stratastax.search.core.api
 
+import dev.buijs.stratastax.entity.core.api.Sort
 import dev.buijs.stratastax.search.core.app.sort.SortWriter
 import dev.buijs.stratastax.search.core.app.validate
 import dev.buijs.stratastax.search.core.spi.CursorCodec
@@ -52,9 +53,13 @@ class SearchParser(
      *   criteria.
      * @throws SearchException If the limit, filter or sort is invalid.
      */
-    fun parse(request: SearchRequest, configuration: SearchConfiguration): SearchQuery {
+    fun parse(
+        request: SearchRequest,
+        configuration: SearchConfiguration,
+    ): SearchQuery {
         val limit = request.limit ?: configuration.defaultLimit
         validate(limit >= 1) { "Limit must be at least 1" }
+
         validate(limit <= configuration.maxLimit) { "Limit exceeds maximum allowed" }
 
         request.criteria?.filter?.let {
@@ -76,6 +81,7 @@ class SearchParser(
             } else {
                 sortParser.parse(value = request.criteria?.sort, configuration = configuration)
             }
+
         val filter =
             filterParser.parse(
                 value = if (criteria != null) criteria.filter else request.criteria?.filter,
@@ -90,7 +96,10 @@ class SearchParser(
     }
 
     // The sort of a cursor that no longer matches the configuration is just an invalid cursor.
-    private fun readCursorSort(text: String, configuration: SearchConfiguration): Sort =
+    private fun readCursorSort(
+        text: String,
+        configuration: SearchConfiguration,
+    ): Sort =
         try {
             SortWriter.read(text, configuration)
         } catch (e: SearchException) {
@@ -101,10 +110,12 @@ class SearchParser(
         if (cursor.length > maxCursorLength) {
             throw InvalidCursorException("Invalid cursor")
         }
+
         val decoded = cursorCodec.decode(cursor) ?: throw InvalidCursorException("Invalid cursor")
         if (isExpired(decoded)) {
             throw InvalidCursorException("Cursor has expired")
         }
+
         return decoded
     }
 
@@ -114,6 +125,7 @@ class SearchParser(
     }
 
     companion object {
+
         /** How long a cursor stays valid after it was issued. */
         val DEFAULT_CURSOR_EXPIRY: Duration = Duration.ofHours(24)
 

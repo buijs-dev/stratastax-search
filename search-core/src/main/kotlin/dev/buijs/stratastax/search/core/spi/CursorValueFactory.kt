@@ -19,17 +19,33 @@ package dev.buijs.stratastax.search.core.spi
 import kotlin.reflect.KClass
 
 /**
- * Converts one raw value of type [T] into its [CursorElement] representation. This is the
- * pluggable per-type unit that [CursorValueFactoryRegistry] dispatches on.
+ * Converts one raw value of type [T] into its [CursorElement] representation. This is the pluggable
+ * per-type unit that [CursorValueFactoryRegistry] dispatches on.
  *
  * [Enum] and [Map] are reserved sentinel types: neither has a single common concrete class to key
  * on, so a factory registered under one is used for any enum or map value without an exact-type
  * match.
  */
 interface CursorValueFactory<T : Any> {
-    /** The value type this factory handles, stated explicitly rather than inferred by reflection. */
+
+    /**
+     * The value type this factory handles, stated explicitly rather than inferred by reflection.
+     */
     val type: KClass<T>
 
     /** Converts [value], belonging to the sort field [fieldName], into a [CursorElement]. */
-    fun convert(value: T, fieldName: String): CursorElement
+    fun convert(
+        value: T,
+        fieldName: String,
+    ): CursorElement
+}
+
+/**
+ * Several [CursorValueFactory]s contributed as one unit, e.g. every factory a code generator wrote
+ * for a module: one bean instead of one per factory. A registry built from beans registers each of
+ * [factories] as if it were a bean of its own.
+ */
+interface CursorValueFactories {
+
+    val factories: List<CursorValueFactory<*>>
 }

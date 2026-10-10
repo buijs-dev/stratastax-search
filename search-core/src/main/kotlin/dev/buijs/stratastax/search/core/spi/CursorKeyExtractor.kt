@@ -16,20 +16,24 @@
  */
 package dev.buijs.stratastax.search.core.spi
 
+import dev.buijs.stratastax.entity.core.api.Sort
 import dev.buijs.stratastax.search.core.api.CursorState
 import dev.buijs.stratastax.search.core.api.SearchException
-import dev.buijs.stratastax.search.core.api.Sort
 
 /**
- * Extracts a row's position in the current sort order as a list of [CursorElement], one per
- * [Sort] field.
+ * Extracts a row's position in the current sort order as a list of [CursorElement], one per [Sort]
+ * field.
  *
  * The list must be in the same order as `sort.fields`: [CursorState] values are positional, not
  * keyed by name.
  */
 fun interface CursorKeyExtractor<T> {
+
     /** Returns the cursor elements of [item] for each field of [sort], in sort order. */
-    fun elementsFor(item: T, sort: Sort): List<CursorElement>
+    fun elementsFor(
+        item: T,
+        sort: Sort,
+    ): List<CursorElement>
 }
 
 /**
@@ -49,7 +53,6 @@ fun <T> Map<String, (T) -> CursorElement>.filterElementsFor(
                 ?: throw SearchException(
                     "No cursorValue extractor configured for sortable field '$it'. " +
                         "This should have been caught when the configuration was built. " +
-                        "Did the Sort come from a different configuration?"
+                        "Did the Sort come from a different configuration?",
                 )
-        }
-        .map { it(item) }
+        }.map { it(item) }

@@ -69,7 +69,10 @@ class TokenizerTest {
             "age=le=5,      =le=",
             "name=like=Al,  =like=",
         )
-        fun `range and like operators`(input: String, expectedOp: String) {
+        fun `range and like operators`(
+            input: String,
+            expectedOp: String,
+        ) {
             val tokens = tokenize(input)
             assertThat(tokens[1].type).isEqualTo(TokenType.OPERATOR)
             assertThat(tokens[1].text).isEqualTo(expectedOp)
@@ -93,7 +96,7 @@ class TokenizerTest {
                         field("b"),
                         operator("=="),
                         value("2"),
-                    )
+                    ),
                 )
         }
     }
@@ -109,7 +112,10 @@ class TokenizerTest {
             "name=LIKE=Al,  =like=",
             "status=IN=(a), =in=",
         )
-        fun `operator casing normalises to canonical lowercase`(input: String, expectedOp: String) {
+        fun `operator casing normalises to canonical lowercase`(
+            input: String,
+            expectedOp: String,
+        ) {
             assertThat(tokenize(input)[1].text).isEqualTo(expectedOp)
         }
     }
@@ -130,7 +136,7 @@ class TokenizerTest {
                         field("b"),
                         operator("=="),
                         value("2"),
-                    )
+                    ),
                 )
         }
 
@@ -146,7 +152,7 @@ class TokenizerTest {
                         field("b"),
                         operator("=="),
                         value("2"),
-                    )
+                    ),
                 )
         }
 
@@ -162,7 +168,7 @@ class TokenizerTest {
                         field("b"),
                         operator("=="),
                         value("2"),
-                    )
+                    ),
                 )
         }
 
@@ -178,7 +184,7 @@ class TokenizerTest {
                         field("b"),
                         operator("=="),
                         value("2"),
-                    )
+                    ),
                 )
         }
 
@@ -205,7 +211,7 @@ class TokenizerTest {
                         field("c"),
                         operator("=="),
                         value("3"),
-                    )
+                    ),
                 )
         }
 
@@ -247,7 +253,7 @@ class TokenizerTest {
                         operator("=="),
                         value("2"),
                         rparen,
-                    )
+                    ),
                 )
         }
 
@@ -267,7 +273,7 @@ class TokenizerTest {
                         operator("=="),
                         value("2"),
                         rparen,
-                    )
+                    ),
                 )
         }
 
@@ -287,7 +293,7 @@ class TokenizerTest {
                         operator("=="),
                         value("2"),
                         rparen,
-                    )
+                    ),
                 )
         }
     }
@@ -314,7 +320,7 @@ class TokenizerTest {
                         value("b"),
                         value("c"),
                         rparen,
-                    )
+                    ),
                 )
         }
 
@@ -329,7 +335,7 @@ class TokenizerTest {
                         value("a"),
                         value("b"),
                         rparen,
-                    )
+                    ),
                 )
         }
 
@@ -344,7 +350,7 @@ class TokenizerTest {
                         quoted("Alice"),
                         quoted("Bob"),
                         rparen,
-                    )
+                    ),
                 )
         }
 
@@ -378,7 +384,7 @@ class TokenizerTest {
                         value("a"),
                         value("b"),
                         rparen,
-                    )
+                    ),
                 )
         }
 
@@ -397,7 +403,7 @@ class TokenizerTest {
                         field("y"),
                         operator("=="),
                         value("3"),
-                    )
+                    ),
                 )
         }
 
@@ -416,7 +422,7 @@ class TokenizerTest {
                             value("and"),
                             value("pending"),
                             rparen,
-                        )
+                        ),
                     )
             }
 
@@ -424,7 +430,7 @@ class TokenizerTest {
             fun `unquoted 'or' as the only list value stays a VALUE, not an OR token`() {
                 assertThat(tokenize("status=in=(or)"))
                     .isEqualTo(
-                        listOf(field("status"), operator("=in="), lparen, value("or"), rparen)
+                        listOf(field("status"), operator("=in="), lparen, value("or"), rparen),
                     )
             }
         }
@@ -512,7 +518,7 @@ class TokenizerTest {
                         field("other"),
                         operator("=="),
                         value("1"),
-                    )
+                    ),
                 )
         }
     }
@@ -544,7 +550,7 @@ class TokenizerTest {
                         value("k=v"),
                         value("x=y"),
                         rparen,
-                    )
+                    ),
                 )
         }
 
@@ -577,7 +583,7 @@ class TokenizerTest {
             // Balanced-paren validation happens in ExpressionParser, not here.
             assertThat(tokenize("status=in=(a,b"))
                 .isEqualTo(
-                    listOf(field("status"), operator("=in="), lparen, value("a"), value("b"))
+                    listOf(field("status"), operator("=in="), lparen, value("a"), value("b")),
                 )
         }
 

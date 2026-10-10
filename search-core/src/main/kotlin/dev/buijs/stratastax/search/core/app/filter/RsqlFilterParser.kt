@@ -17,8 +17,17 @@
 package dev.buijs.stratastax.search.core.app.filter
 
 import dev.buijs.stratastax.entity.core.api.EntityField
-import dev.buijs.stratastax.search.core.api.*
+import dev.buijs.stratastax.search.core.api.AndExpression
+import dev.buijs.stratastax.search.core.api.ComparisonExpression
+import dev.buijs.stratastax.search.core.api.ComparisonOperator
+import dev.buijs.stratastax.search.core.api.Filter
+import dev.buijs.stratastax.search.core.api.FilterExpression
+import dev.buijs.stratastax.search.core.api.FilterOperator
 import dev.buijs.stratastax.search.core.api.FilterValue.Companion.of
+import dev.buijs.stratastax.search.core.api.InExpression
+import dev.buijs.stratastax.search.core.api.InOperator
+import dev.buijs.stratastax.search.core.api.LikeExpression
+import dev.buijs.stratastax.search.core.api.OrExpression
 import dev.buijs.stratastax.search.core.api.SearchException
 import dev.buijs.stratastax.search.core.app.SearchFieldCache
 import dev.buijs.stratastax.search.core.spi.FilterParser
@@ -31,8 +40,9 @@ import dev.buijs.stratastax.search.core.spi.SearchConfiguration
  * @property maxNestingDepth Maximum allowed nesting depth for parenthesized sub-expressions to
  *   prevent StackOverflowError (DoS).
  */
-internal class RsqlFilterParser(private val maxNestingDepth: Int = DEFAULT_MAX_NESTING_DEPTH) :
-    FilterParser {
+internal class RsqlFilterParser(
+    private val maxNestingDepth: Int = DEFAULT_MAX_NESTING_DEPTH,
+) : FilterParser {
 
     /**
      * Parses an RSQL filter query string into a structured [Filter] AST tree.
@@ -44,7 +54,10 @@ internal class RsqlFilterParser(private val maxNestingDepth: Int = DEFAULT_MAX_N
      *   an empty list.
      * @throws SearchException If tokenization, depth limits, or expression parsing fails.
      */
-    override fun parse(value: String?, configuration: SearchConfiguration): Filter? {
+    override fun parse(
+        value: String?,
+        configuration: SearchConfiguration,
+    ): Filter? {
         if (value.isNullOrBlank()) {
             return null
         }
@@ -59,6 +72,7 @@ internal class RsqlFilterParser(private val maxNestingDepth: Int = DEFAULT_MAX_N
     }
 
     companion object {
+
         /** Default limit for maximum allowed nesting depth of sub-expressions. */
         const val DEFAULT_MAX_NESTING_DEPTH = 100
     }
@@ -69,15 +83,17 @@ private class ExpressionParser(
     private val fieldMap: Map<String, EntityField>,
     private val maxNestingDepth: Int,
 ) {
+
     private var cursor = 0
 
     private var currentNestingDepth = 0
 
     /** Parses the complete token sequence into a root [FilterExpression]. */
-    fun parseOrThrow(): FilterExpression = parseOr {
-        // Verify no unconsumed trailing tokens remain.
-        ensureEndOfInput()
-    }
+    fun parseOrThrow(): FilterExpression =
+        parseOr {
+            // Verify no unconsumed trailing tokens remain.
+            ensureEndOfInput()
+        }
 
     private fun parseOr(finalize: (() -> Unit)? = null): FilterExpression =
         parse(TokenType.OR) { parseAnd() }
@@ -90,14 +106,15 @@ private class ExpressionParser(
     private inline fun parse(
         token: TokenType,
         action: () -> FilterExpression,
-    ): List<FilterExpression> = buildList {
-        do {
-            add(action())
-        } while (match(token))
-    }
+    ): List<FilterExpression> =
+        buildList {
+            do {
+                add(action())
+            } while (match(token))
+        }
 
     private fun List<FilterExpression>.selectFirstOrWrapList(
-        action: (List<FilterExpression>) -> FilterExpression
+        action: (List<FilterExpression>) -> FilterExpression,
     ): FilterExpression =
         if (size == 1) {
             this[0]
@@ -120,7 +137,9 @@ private class ExpressionParser(
                 }
             }
 
-            else -> parseOperator(parseField())
+            else -> {
+                parseOperator(parseField())
+            }
         }
 
     private fun parseField(): EntityField {
@@ -139,19 +158,21 @@ private class ExpressionParser(
         val tokenText = token.text
         // The tokenizer only emits operators from FilterOperator.values, so the lookup cannot miss.
         return when (val operator = FilterOperator.asMap.getValue(tokenText)) {
-            is ComparisonOperator ->
+            is ComparisonOperator -> {
                 if (operator.allowed(field.type)) {
                     parseComparison(field, operator)
                 } else {
                     throw invalidOperatorForField(operator, field)
                 }
+            }
 
-            is InOperator ->
+            is InOperator -> {
                 if (operator.allowed(field.type)) {
                     parseIn(field, operator)
                 } else {
                     throw invalidOperatorForField(operator, field)
                 }
+            }
         }
     }
 
@@ -163,7 +184,12 @@ private class ExpressionParser(
         return when {
             // LIKE pattern matching preserves the raw wildcard pattern string
             // directly, bypassing standard value conversion/nullable check.
-            operator == ComparisonOperator.LIKE -> LikeExpression(field, value.text)
+            operator == ComparisonOperator.LIKE -> {
+                LikeExpression(field, value.text)
+            }
+            operator == ComparisonOperator.ILIKE -> {
+                LikeExpression(field, value.text, ignoreCase = true)
+            }
             else -> {
                 val filter = of(field, value.text, operator.nullable, value.quoted)
                 ComparisonExpression(field, operator, filter)
@@ -171,17 +197,19 @@ private class ExpressionParser(
         }
     }
 
-    private fun parseIn(field: EntityField, operator: InOperator): InExpression {
+    private fun parseIn(
+        field: EntityField,
+        operator: InOperator,
+    ): InExpression {
         consume(TokenType.LPAREN)
         val values =
             buildList {
-                    while (peek()?.type == TokenType.VALUE) {
-                        val value = consume(TokenType.VALUE)
-                        val filter = of(field, value.text, operator.nullable, value.quoted)
-                        add(filter)
-                    }
+                while (peek()?.type == TokenType.VALUE) {
+                    val value = consume(TokenType.VALUE)
+                    val filter = of(field, value.text, operator.nullable, value.quoted)
+                    add(filter)
                 }
-                .ifEmpty { throw emptyValueList(field) }
+            }.ifEmpty { throw emptyValueList(field) }
 
         consume(TokenType.RPAREN)
         return InExpression(field, operator, values)
@@ -220,11 +248,14 @@ private class ExpressionParser(
 private fun exceededMaxFilterDepth(maxNestingDepth: Int): SearchException =
     SearchException("Exceeded maximum filter nesting depth of $maxNestingDepth.")
 
-private fun expectedToken(expected: TokenType, actual: Token?): SearchException =
+private fun expectedToken(
+    expected: TokenType,
+    actual: Token?,
+): SearchException =
     SearchException(
         "Expected ${expected.description}, but got ${
-        actual?.let { "'${it.text}'" } ?: "end of input"
-    }"
+            actual?.let { "'${it.text}'" } ?: "end of input"
+        }",
     )
 
 private fun unexpectedToken(token: Token): SearchException =
@@ -241,13 +272,18 @@ private fun invalidOperatorForField(
     field: EntityField,
 ): SearchException = invalidOperatorForField(operator.token, field)
 
-private fun invalidOperatorForField(operator: InOperator, field: EntityField): SearchException =
-    invalidOperatorForField(operator.token, field)
+private fun invalidOperatorForField(
+    operator: InOperator,
+    field: EntityField,
+): SearchException = invalidOperatorForField(operator.token, field)
 
-private fun invalidOperatorForField(token: String, field: EntityField): SearchException =
+private fun invalidOperatorForField(
+    token: String,
+    field: EntityField,
+): SearchException =
     SearchException(
         "Operator '$token' is not supported for " +
-            "data type ${field.type} on field '${field.name}'"
+            "data type ${field.type} on field '${field.name}'",
     )
 
 private fun emptyValueList(field: EntityField): SearchException =

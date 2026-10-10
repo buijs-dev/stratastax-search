@@ -26,7 +26,9 @@ import dev.buijs.stratastax.search.core.spi.CursorKeyExtractor
  * first or next page, before it for a previous page (a [CursorDirection.BEFORE] cursor). The page
  * the request came from always lies on the other side.
  */
-class CursorPageAssembler(private val cursorCodec: CursorCodec) {
+class CursorPageAssembler(
+    private val cursorCodec: CursorCodec,
+) {
 
     /**
      * Assembles the [CursorPage] for [page], which was read for [search].
@@ -43,15 +45,17 @@ class CursorPageAssembler(private val cursorCodec: CursorCodec) {
         val criteria = cursor?.criteria ?: CursorCriteria.of(search.sort, search.filter)
         val backwards = cursor?.direction == CursorDirection.BEFORE
 
-        fun encode(item: T, direction: CursorDirection) =
-            cursorCodec.encode(
-                CursorState(
-                    values = keyExtractor.elementsFor(item, search.sort),
-                    hash = hash,
-                    direction = direction,
-                    criteria = criteria,
-                )
-            )
+        fun encode(
+            item: T,
+            direction: CursorDirection,
+        ) = cursorCodec.encode(
+            CursorState(
+                values = keyExtractor.elementsFor(item, search.sort),
+                hash = hash,
+                direction = direction,
+                criteria = criteria,
+            ),
+        )
 
         val hasNext =
             if (backwards) {

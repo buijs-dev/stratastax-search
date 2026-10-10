@@ -17,9 +17,11 @@
 package dev.buijs.stratastax.search.core.spi
 
 import dev.buijs.stratastax.entity.core.api.EntityField
+import dev.buijs.stratastax.entity.core.api.SortField
 
 /** Page size used when a request does not specify one. */
 const val STANDARD_DEFAULT_LIMIT = 20
+
 /** Upper bound on the page size a request may ask for. */
 const val STANDARD_MAX_LIMIT = 100
 
@@ -29,6 +31,7 @@ const val STANDARD_MAX_LIMIT = 100
  * Instances are used as cache keys, so keep them long-lived (one per entity), not per request.
  */
 interface SearchConfiguration {
+
     /** Page size used when a request does not specify one. */
     val defaultLimit: Int
 
@@ -49,7 +52,9 @@ interface SearchConfiguration {
         get() = emptyList()
 }
 
-/** Plain data-class implementation of [SearchConfiguration] with the standard limits as defaults. */
+/**
+ * Plain data-class implementation of [SearchConfiguration] with the standard limits as defaults.
+ */
 data class StandardSearchConfiguration(
     override val defaultLimit: Int = STANDARD_DEFAULT_LIMIT,
     override val maxLimit: Int = STANDARD_MAX_LIMIT,

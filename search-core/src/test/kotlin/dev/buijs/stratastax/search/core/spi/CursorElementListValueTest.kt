@@ -17,11 +17,11 @@
 package dev.buijs.stratastax.search.core.spi
 
 import dev.buijs.stratastax.search.core.api.SearchException
-import java.math.BigDecimal
-import java.time.Instant
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.time.Instant
 
 /**
  * [CursorElement.ListValue] uses a length-prefixed ("netstring") encoding for its items
@@ -42,7 +42,7 @@ internal class CursorElementListValueTest {
                     CursorElement.BooleanValue(true),
                     CursorElement.TimestampValue(Instant.parse("2026-01-01T00:00:00Z")),
                     CursorElement.NullValue,
-                )
+                ),
             )
 
         assertThat(CursorElement.of(original.encode())).isEqualTo(original)
@@ -64,7 +64,7 @@ internal class CursorElementListValueTest {
                 listOf(
                     CursorElement.StringValue("a|b%c:d"),
                     CursorElement.StringValue("100:not-a-length"),
-                )
+                ),
             )
 
         assertThat(CursorElement.of(original.encode())).isEqualTo(original)
@@ -77,7 +77,7 @@ internal class CursorElementListValueTest {
                 listOf(
                     CursorElement.ListValue(listOf(CursorElement.StringValue("inner"))),
                     CursorElement.StringValue("outer"),
-                )
+                ),
             )
 
         assertThat(CursorElement.of(original.encode())).isEqualTo(original)

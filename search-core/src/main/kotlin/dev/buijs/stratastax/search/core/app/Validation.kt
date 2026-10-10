@@ -18,13 +18,19 @@ package dev.buijs.stratastax.search.core.app
 
 import dev.buijs.stratastax.search.core.api.SearchException
 
-internal inline fun validate(condition: Boolean, lazyMessage: () -> String) {
+internal inline fun validate(
+    condition: Boolean,
+    lazyMessage: () -> String,
+) {
     if (!condition) {
         throw SearchException(lazyMessage())
     }
 }
 
-internal inline fun <T> valueOrThrow(value: T?, lazyMessage: () -> String): T {
+internal inline fun <T> valueOrThrow(
+    value: T?,
+    lazyMessage: () -> String,
+): T {
     validate(value != null, lazyMessage)
     return value!!
 }

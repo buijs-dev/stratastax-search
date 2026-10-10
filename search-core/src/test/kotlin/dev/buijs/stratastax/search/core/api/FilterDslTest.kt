@@ -18,13 +18,13 @@ package dev.buijs.stratastax.search.core.api
 
 import dev.buijs.stratastax.entity.core.api.EntityField
 import dev.buijs.stratastax.entity.core.api.EntityFieldType
-import java.math.BigDecimal
-import java.time.Instant
-import java.time.ZoneOffset
-import java.util.UUID
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.time.Instant
+import java.time.ZoneOffset
+import java.util.*
 
 internal class FilterDslTest {
 
@@ -37,6 +37,7 @@ internal class FilterDslTest {
         EntityField("status", EntityFieldType.ENUM, enumValues = setOf("ACTIVE", "PENDING"))
 
     enum class Status {
+
         ACTIVE,
         PENDING,
     }
@@ -52,7 +53,7 @@ internal class FilterDslTest {
                     stringField,
                     ComparisonOperator.EQUALS,
                     FilterValue.StringValue("Alain"),
-                )
+                ),
             )
     }
 
@@ -150,7 +151,7 @@ internal class FilterDslTest {
                     FilterValue.NumberValue(BigDecimal.valueOf(1)),
                     FilterValue.NumberValue(BigDecimal.valueOf(2)),
                     FilterValue.NumberValue(BigDecimal.valueOf(3)),
-                )
+                ),
             )
     }
 
@@ -169,6 +170,32 @@ internal class FilterDslTest {
     @Test
     fun `isIn is rejected for a BOOLEAN field, same as InOperator allowed()`() {
         assertThatThrownBy { booleanField isIn listOf(true) }
+            .isInstanceOf(SearchException::class.java)
+    }
+
+    // == ilike/containsIgnoreCase ==
+
+    @Test
+    fun `ilike builds a case-insensitive LikeExpression`() {
+        assertThat(stringField.ilike("a%"))
+            .isEqualTo(LikeExpression(stringField, "a%", ignoreCase = true))
+    }
+
+    @Test
+    fun `containsIgnoreCase wraps the value in wildcards`() {
+        assertThat(stringField.containsIgnoreCase("Al"))
+            .isEqualTo(LikeExpression(stringField, "%Al%", ignoreCase = true))
+    }
+
+    @Test
+    fun `containsIgnoreCase escapes wildcards and backslashes in the value`() {
+        assertThat(stringField.containsIgnoreCase("""50%_a\b""").pattern)
+            .isEqualTo("""%50\%\_a\\b%""")
+    }
+
+    @Test
+    fun `containsIgnoreCase rejects a non-string field`() {
+        assertThatThrownBy { numberField.containsIgnoreCase("1") }
             .isInstanceOf(SearchException::class.java)
     }
 }

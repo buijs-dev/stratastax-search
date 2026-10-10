@@ -31,7 +31,7 @@ import dev.buijs.stratastax.search.core.spi.SortParser
  *   a StackOverflowError from adversarial input.
  */
 fun standardFilterParser(
-    maxNestingDepth: Int = RsqlFilterParser.DEFAULT_MAX_NESTING_DEPTH
+    maxNestingDepth: Int = RsqlFilterParser.DEFAULT_MAX_NESTING_DEPTH,
 ): FilterParser = RsqlFilterParser(maxNestingDepth)
 
 /**
@@ -47,5 +47,7 @@ fun standardSortParser(): SortParser = OrderedMultivaluedSortParser()
  * @param version Payload version tag embedded in every cursor. Bump it when the payload format
  *   changes, so old cursors are rejected instead of silently misparsed.
  */
-fun standardCursorCodec(signingKey: CursorSigningKey, version: String = "1"): CursorCodec =
-    HmacBase64CursorCodec(signingKey, version)
+fun standardCursorCodec(
+    signingKey: CursorSigningKey,
+    version: String = "1",
+): CursorCodec = HmacBase64CursorCodec(signingKey, version)

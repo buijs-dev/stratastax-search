@@ -24,6 +24,10 @@ import dev.buijs.stratastax.search.core.api.SearchQuery
  * through a backend-specific [M].
  */
 interface SearchQueryTranslator<M : FieldMapping<*>, R> {
+
     /** Translates [query] into a backend-native result [R], resolving fields via [mapping]. */
-    fun translate(query: SearchQuery, mapping: M): R
+    fun translate(
+        query: SearchQuery,
+        mapping: M,
+    ): R
 }

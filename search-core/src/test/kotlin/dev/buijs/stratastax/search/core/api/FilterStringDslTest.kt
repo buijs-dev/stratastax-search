@@ -18,11 +18,11 @@ package dev.buijs.stratastax.search.core.api
 
 import dev.buijs.stratastax.entity.core.api.EntityField
 import dev.buijs.stratastax.entity.core.api.EntityFieldType
-import java.math.BigDecimal
-import java.time.Instant
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import java.math.BigDecimal
+import java.time.Instant
 
 /** The string-based half of the filter DSL, plus the type-mismatch paths of the typed half. */
 internal class FilterStringDslTest {
@@ -43,7 +43,7 @@ internal class FilterStringDslTest {
                     score,
                     ComparisonOperator.EQUALS,
                     FilterValue.NumberValue(BigDecimal("5")),
-                )
+                ),
             )
         assertThat(name.notEqualsValue("x"))
             .isEqualTo(
@@ -51,7 +51,7 @@ internal class FilterStringDslTest {
                     name,
                     ComparisonOperator.NOT_EQUALS,
                     FilterValue.StringValue("x"),
-                )
+                ),
             )
     }
 
@@ -73,7 +73,7 @@ internal class FilterStringDslTest {
             .isEqualTo(ComparisonExpression(name, ComparisonOperator.EQUALS, FilterValue.NullValue))
         assertThat(name.isNotNull())
             .isEqualTo(
-                ComparisonExpression(name, ComparisonOperator.NOT_EQUALS, FilterValue.NullValue)
+                ComparisonExpression(name, ComparisonOperator.NOT_EQUALS, FilterValue.NullValue),
             )
     }
 
@@ -123,7 +123,7 @@ internal class FilterStringDslTest {
                     status,
                     InOperator.IN,
                     listOf(FilterValue.EnumValue("ACTIVE"), FilterValue.EnumValue("PENDING")),
-                )
+                ),
             )
         assertThat(score.notInValues("1").operator).isEqualTo(InOperator.OUT)
     }
@@ -182,7 +182,7 @@ internal class FilterStringDslTest {
         assertThatThrownBy { status eq 5 }
             .isInstanceOf(SearchException::class.java)
             .hasMessage(
-                "Invalid enum value '5' for field 'status'. Allowed values: ACTIVE, PENDING"
+                "Invalid enum value '5' for field 'status'. Allowed values: ACTIVE, PENDING",
             )
     }
 }

@@ -35,4 +35,7 @@ data class SearchRequest(
  * @property sort Sort expression, or `null` for the configuration's default.
  * @property filter RSQL filter, or `null` for none.
  */
-data class SearchCriteria(val sort: String? = null, val filter: String? = null)
+data class SearchCriteria(
+    val sort: String? = null,
+    val filter: String? = null,
+)

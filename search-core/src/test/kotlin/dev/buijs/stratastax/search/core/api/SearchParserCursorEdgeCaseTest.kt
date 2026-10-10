@@ -21,12 +21,12 @@ import dev.buijs.stratastax.search.core.app.filter.RsqlFilterParser
 import dev.buijs.stratastax.search.core.app.sort.OrderedMultivaluedSortParser
 import dev.buijs.stratastax.search.core.spi.CursorElement.StringValue
 import dev.buijs.stratastax.search.testdata.testSearchConfiguration
-import java.time.Clock
-import java.time.Instant
-import java.time.ZoneOffset
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 
 class SearchParserCursorEdgeCaseTest {
 
@@ -62,10 +62,12 @@ class SearchParserCursorEdgeCaseTest {
         val undated = state.copy(hash = CriteriaHash.of(query.sort, null))
         val undatedCodec =
             object : dev.buijs.stratastax.search.core.spi.CursorCodec {
+
                 override fun encode(cursor: CursorState) = "undated"
 
                 override fun decode(cursor: String) = undated
             }
+
         val farFuture = Clock.fixed(Instant.parse("2999-01-01T00:00:00Z"), ZoneOffset.UTC)
         val subject = SearchParser(undatedCodec, RsqlFilterParser(), sortParser, clock = farFuture)
 
