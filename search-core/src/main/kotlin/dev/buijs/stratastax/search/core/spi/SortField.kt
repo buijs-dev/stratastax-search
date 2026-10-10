@@ -23,19 +23,26 @@ fun EntityField.asc(): SortField = SortField(this, SortDirection.ASC)
 
 fun EntityField.desc(): SortField = SortField(this, SortDirection.DESC)
 
-data class SortField(val field: EntityField, val direction: SortDirection)
+data class SortField(
+    val field: EntityField,
+    val direction: SortDirection,
+)
 
 enum class SortDirection {
     ASC,
-    DESC;
+    DESC,
+    ;
 
     companion object {
         private val values = mapOf("ASC" to ASC, "DESC" to DESC)
 
-        fun of(value: String, fieldName: String): SortDirection =
+        fun of(
+            value: String,
+            fieldName: String,
+        ): SortDirection =
             values[value.uppercase()]
                 ?: throw SearchException(
-                    "Invalid sort direction '$value' for field '$fieldName', expected 'ASC' or 'DESC'"
+                    "Invalid sort direction '$value' for field '$fieldName', expected 'ASC' or 'DESC'",
                 )
     }
 }

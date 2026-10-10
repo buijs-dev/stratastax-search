@@ -54,7 +54,10 @@ package dev.buijs.stratastax.search.core.spi
  */
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.VALUE_PARAMETER)
-annotation class Filter(val fixedValue: String = "", val alias: String = "")
+annotation class Filter(
+    val fixedValue: String = "",
+    val alias: String = "",
+)
 
 /**
  * Marks a constructor property as sortable - the annotation-based equivalent of `publicApi { sort {

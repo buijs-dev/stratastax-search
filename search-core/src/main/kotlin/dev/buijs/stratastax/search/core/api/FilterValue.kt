@@ -25,7 +25,7 @@ import dev.buijs.stratastax.search.core.api.CorruptFilterValue.InvalidNumber
 import dev.buijs.stratastax.search.core.api.CorruptFilterValue.InvalidUuid
 import java.math.BigDecimal
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 /** Represents a successfully parsed typed filter value. */
 sealed interface FilterValue {

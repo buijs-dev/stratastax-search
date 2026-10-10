@@ -27,7 +27,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
-import java.util.*
+import java.util.UUID
 
 /**
  * `toCursorElement` is what lets `cursorValue { }` (search-jooq) return a raw value instead of an

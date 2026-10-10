@@ -19,7 +19,9 @@ package dev.buijs.stratastax.search.core.api
 import dev.buijs.stratastax.search.core.app.validate
 import dev.buijs.stratastax.search.core.spi.SortField
 
-data class Sort(val fields: List<SortField>) {
+data class Sort(
+    val fields: List<SortField>,
+) {
     init {
         validate(fields.isNotEmpty()) {
             "Sort must contain at least one field; results are always sorted."

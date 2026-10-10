@@ -31,7 +31,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import java.util.*
+import java.util.UUID
 
 /** Syntax and semantic errors of the RSQL parser, and the filter types the main tests skip. */
 class RsqlFilterParserErrorTest {

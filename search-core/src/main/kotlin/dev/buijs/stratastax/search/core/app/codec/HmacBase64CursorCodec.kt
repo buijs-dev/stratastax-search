@@ -25,7 +25,7 @@ import dev.buijs.stratastax.search.core.spi.CursorSigningKey
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Clock
 import java.time.Instant
-import java.util.*
+import java.util.Base64
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
