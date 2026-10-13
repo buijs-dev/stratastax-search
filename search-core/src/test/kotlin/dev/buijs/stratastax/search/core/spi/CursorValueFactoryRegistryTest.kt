@@ -17,6 +17,8 @@
 package dev.buijs.stratastax.search.core.spi
 
 import dev.buijs.stratastax.search.core.api.SearchException
+import dev.buijs.stratastax.search.testdata.Status
+import dev.buijs.stratastax.search.testdata.WrappedId
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -24,34 +26,11 @@ import java.math.BigDecimal
 
 internal class CursorValueFactoryRegistryTest {
 
-    private enum class Status {
-
-        ACTIVE,
-        INACTIVE,
-    }
-
-    private data class WrappedId(
-        val value: Int,
-    )
-
-    private fun <T : Any> factory(
-        forType: kotlin.reflect.KClass<T>,
-        block: (T) -> CursorElement,
-    ): CursorValueFactory<T> =
-        object : CursorValueFactory<T> {
-
-            override val type = forType
-
-            override fun convert(
-                value: T,
-                fieldName: String,
-            ): CursorElement = block(value)
-        }
-
     @Test
     fun `default registry converts every standard type exactly like the old hardcoded dispatch`() {
         val registry = CursorValueFactoryRegistry.default
-        assertThat(registry.convert("hi", "x")).isEqualTo(CursorElement.StringValue("hi"))
+        assertThat(registry.convert("hi", "x"))
+            .isEqualTo(CursorElement.StringValue("hi"))
         assertThat(registry.convert(5, "x"))
             .isEqualTo(CursorElement.NumberValue(BigDecimal.valueOf(5)))
         assertThat(registry.convert(Status.ACTIVE, "x"))
@@ -66,14 +45,16 @@ internal class CursorValueFactoryRegistryTest {
 
     @Test
     fun `a registered factory for a custom type is used`() {
+        val wrapperFactory =
+            factory(WrappedId::class) {
+                CursorElement.NumberValue(it.value.toBigDecimal())
+            }
+
         val registry =
             CursorValueFactoryRegistry
                 .builder()
-                .register(
-                    factory(
-                        WrappedId::class,
-                    ) { CursorElement.NumberValue(it.value.toBigDecimal()) },
-                ).build()
+                .register(wrapperFactory)
+                .build()
 
         assertThat(registry.convert(WrappedId(42), "x"))
             .isEqualTo(CursorElement.NumberValue(BigDecimal.valueOf(42)))
@@ -86,8 +67,7 @@ internal class CursorValueFactoryRegistryTest {
                 .builder()
                 .register(factory(String::class) { CursorElement.StringValue(it) })
                 .register(factory(String::class) { CursorElement.StringValue(it) })
-        }.isInstanceOf(SearchException::class.java)
-            .hasMessageContaining("String")
+        }.isInstanceOf(SearchException::class.java).hasMessageContaining("String")
     }
 
     @Test
@@ -129,11 +109,6 @@ internal class CursorValueFactoryRegistryTest {
 
     @Test
     fun `an empty Map still falls back to the Map sentinel entry`() {
-        // Regression test - Kotlin's emptyMap()/mapOf() return different
-        // concrete runtime classes (EmptyMap, LinkedHashMap, ...) depending
-        // on size, none of which is Map::class itself - an exact-class-only
-        // lookup would always miss the empty-map case, which is exactly the
-        // shape of the original bug report this fallback exists to fix.
         val registry =
             CursorValueFactoryRegistry
                 .builder()
@@ -146,15 +121,33 @@ internal class CursorValueFactoryRegistryTest {
 
     @Test
     fun `an exact match for a concrete Map type wins over the Map sentinel`() {
+        val linkedMapFactory =
+            factory(LinkedHashMap::class) {
+                CursorElement.StringValue("exact:${it.size}")
+            }
+
         val registry =
             CursorValueFactoryRegistry
                 .builder()
                 .register(factory(Map::class) { CursorElement.StringValue("sentinel") })
-                .register(
-                    factory(LinkedHashMap::class) { CursorElement.StringValue("exact:${it.size}") },
-                ).build()
+                .register(linkedMapFactory)
+                .build()
 
         assertThat(registry.convert(linkedMapOf("color" to "red"), "x"))
             .isEqualTo(CursorElement.StringValue("exact:1"))
     }
+
+    private fun <T : Any> factory(
+        forType: kotlin.reflect.KClass<T>,
+        block: (T) -> CursorElement,
+    ): CursorValueFactory<T> =
+        object : CursorValueFactory<T> {
+
+            override val type = forType
+
+            override fun convert(
+                value: T,
+                fieldName: String,
+            ): CursorElement = block(value)
+        }
 }

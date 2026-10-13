@@ -43,48 +43,46 @@ object CriteriaHash {
                     .map { "${lengthPrefixed(it.field.name)}:${it.direction};" }
                     .forEach(this::append)
                 append("|filter=")
-                filter?.let { append(canonicalize(it.root)) }
+                filter?.let { append(it.root.canonicalize()) }
             }
 
         return sha256Hex(canonical)
     }
 
-    private fun canonicalize(expression: FilterExpression): String =
-        when (expression) {
+    private fun FilterExpression.canonicalize(): String =
+        when (this) {
             is AndExpression -> {
-                "AND(" + expression.children.joinToString(",") { canonicalize(it) } + ")"
+                "AND(" + children.joinToString(",") { it.canonicalize() } + ")"
             }
 
             is OrExpression -> {
-                "OR(" + expression.children.joinToString(",") { canonicalize(it) } + ")"
+                "OR(" + children.joinToString(",") { it.canonicalize() } + ")"
             }
 
             is ComparisonExpression -> {
-                "${lengthPrefixed(expression.field.name)}${expression.operator}" +
-                    canonicalizeValue(expression.value)
+                "${lengthPrefixed(field.name)}${operator}${value.canonicalizeValue()}"
             }
 
             is InExpression -> {
-                "${lengthPrefixed(expression.field.name)}${expression.operator}[" +
-                    expression.values.joinToString(",") { canonicalizeValue(it) } +
-                    "]"
+                lengthPrefixed(field.name) +
+                    "$operator[${values.joinToString(",") { it.canonicalizeValue() }}]"
             }
 
             is LikeExpression -> {
-                "${lengthPrefixed(expression.field.name)}${expression.operatorToken}" +
-                    lengthPrefixed(expression.pattern)
+                "${lengthPrefixed(field.name)}${operatorToken}${lengthPrefixed(pattern)}"
             }
+
         }
 
-    private fun canonicalizeValue(value: FilterValue): String =
-        when (value) {
-            is FilterValue.StringValue -> "S:${lengthPrefixed(value.value)}"
-            is FilterValue.NumberValue -> "N:${value.value.toPlainString()}"
-            is FilterValue.BooleanValue -> "B:${value.value}"
-            is FilterValue.DateTimeValue -> "T:${value.value}"
-            is FilterValue.EnumValue -> "E:${lengthPrefixed(value.value)}"
-            is FilterValue.UuidValue -> "U:${value.value}"
-            is FilterValue.JsonValue -> "J:${lengthPrefixed(value.value)}"
+    private fun FilterValue.canonicalizeValue(): String =
+        when (this) {
+            is FilterValue.StringValue -> "S:${lengthPrefixed(value)}"
+            is FilterValue.NumberValue -> "N:${value.toPlainString()}"
+            is FilterValue.BooleanValue -> "B:$value"
+            is FilterValue.DateTimeValue -> "T:$value"
+            is FilterValue.EnumValue -> "E:${lengthPrefixed(value)}"
+            is FilterValue.UuidValue -> "U:$value"
+            is FilterValue.JsonValue -> "J:${lengthPrefixed(value)}"
             is FilterValue.NullValue -> "Z"
         }
 

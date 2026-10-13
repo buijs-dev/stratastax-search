@@ -25,6 +25,7 @@ import dev.buijs.stratastax.entity.core.api.EntityFieldType.STRING
 import dev.buijs.stratastax.entity.core.api.SortDirection
 import dev.buijs.stratastax.entity.core.api.SortField
 import dev.buijs.stratastax.search.core.spi.SearchConfiguration
+import java.util.UUID
 
 internal val playedAtField = EntityField("playedAt", DATETIME, filterable = true, sortable = true)
 
@@ -66,3 +67,15 @@ internal val testSearchConfiguration =
             )
         override val tiebreakerField = nameField
     }
+
+internal enum class Status {
+    ACTIVE,
+}
+
+internal data class WrappedUuid(
+    val value: UUID,
+)
+
+internal data class WrappedId(
+    val value: Long,
+)

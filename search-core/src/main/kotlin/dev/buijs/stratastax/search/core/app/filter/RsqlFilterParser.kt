@@ -68,7 +68,6 @@ internal class RsqlFilterParser(
     }
 
     companion object {
-
         /** Default limit for maximum allowed nesting depth of sub-expressions. */
         const val DEFAULT_MAX_NESTING_DEPTH = 100
     }
@@ -81,7 +80,6 @@ private class ExpressionParser(
 ) {
 
     private var cursor = 0
-
     private var currentNestingDepth = 0
 
     /** Parses the complete token sequence into a root [FilterExpression]. */
@@ -177,15 +175,15 @@ private class ExpressionParser(
         operator: ComparisonOperator,
     ): FilterExpression {
         val value = consume(TokenType.VALUE)
-        return when {
-            // LIKE pattern matching preserves the raw wildcard pattern string
-            // directly, bypassing standard value conversion/nullable check.
-            operator == ComparisonOperator.LIKE -> {
+        return when (operator) {
+            ComparisonOperator.LIKE -> {
                 LikeExpression(field, value.text)
             }
-            operator == ComparisonOperator.ILIKE -> {
+
+            ComparisonOperator.ILIKE -> {
                 LikeExpression(field, value.text, ignoreCase = true)
             }
+
             else -> {
                 val filter = of(field, value.text, operator.nullable, value.quoted)
                 ComparisonExpression(field, operator, filter)

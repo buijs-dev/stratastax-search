@@ -31,7 +31,8 @@ import dev.buijs.stratastax.search.core.spi.SearchConfiguration
  * configuration DSL's marker: it is an independent DSL family, and a marker only restricts implicit
  * receivers within its own family.
  */
-@DslMarker annotation class SearchQueryDsl
+@DslMarker
+annotation class SearchQueryDsl
 
 /**
  * Builds a [SearchQuery] programmatically from typed [EntityField] references, for tests and other
@@ -115,7 +116,9 @@ class SearchQueryBuilder
         }
 
         internal fun build(): SearchQuery {
-            validate(limit > 0) { "limit must be greater than 0, was $limit" }
+            validate(limit > 0) {
+                "limit must be greater than 0, was $limit"
+            }
 
             val fields =
                 when (val config = configuration) {
@@ -141,9 +144,9 @@ class SearchQueryBuilder
                 cursorState
                     ?: pendingCursorValues?.let {
                         CursorState(
-                            it,
-                            CriteriaHash.of(sort, filter),
-                            pendingCursorDirection,
+                            values = it,
+                            hash = CriteriaHash.of(sort, filter),
+                            direction = pendingCursorDirection,
                             criteria = CursorCriteria.of(sort, filter),
                         )
                     }

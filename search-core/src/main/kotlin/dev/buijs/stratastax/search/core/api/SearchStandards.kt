@@ -27,7 +27,7 @@ import dev.buijs.stratastax.search.core.spi.SortParser
 /**
  * Creates the default RSQL-based [FilterParser].
  *
- * @param maxNestingDepth Maximum nesting depth of parenthesized sub-expressions, to protect against
+ * @param maxNestingDepth Maximum nesting depth of parenthesized sub expressions to protect against
  *   a StackOverflowError from adversarial input.
  */
 fun standardFilterParser(

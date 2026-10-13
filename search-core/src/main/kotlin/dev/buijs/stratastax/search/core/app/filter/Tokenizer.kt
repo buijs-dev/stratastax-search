@@ -43,7 +43,6 @@ internal enum class TokenType(
 internal class Tokenizer(
     private val input: String,
 ) {
-
     fun tokenize(): List<Token> = TokenMapper(RawScanner(input).scan()).map()
 }
 

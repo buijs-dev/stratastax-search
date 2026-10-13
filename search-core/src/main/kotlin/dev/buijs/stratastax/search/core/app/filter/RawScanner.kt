@@ -20,7 +20,6 @@ import dev.buijs.stratastax.search.core.api.FilterOperator
 import dev.buijs.stratastax.search.core.api.SearchException
 
 internal enum class RawType {
-
     SYMBOL, // ( ) ; ,
     OPERATOR, // == != =gt= =ge= =lt= =le= =in= =out= =like= =ilike=
     WORD, // unquoted field or value

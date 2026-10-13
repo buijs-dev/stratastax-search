@@ -67,7 +67,9 @@ private fun parseExplicitSort(
     value: String,
     configuration: SearchConfiguration,
 ): List<SortField> {
-    validate(value.isNotBlank()) { "Sort parameter must not be blank" }
+    validate(value.isNotBlank()) {
+        "Sort parameter must not be blank"
+    }
 
     return value
         .split(",")
@@ -124,7 +126,9 @@ private fun ensureNoDuplicateFields(fields: List<SortField>) {
     val seen = HashSet<String>()
     for ((field) in fields) {
         val key = field.name.lowercase()
-        validate(seen.add(key)) { "Duplicate sort field '${field.name}' in sort expression" }
+        validate(seen.add(key)) {
+            "Duplicate sort field '${field.name}' in sort expression"
+        }
     }
 }
 

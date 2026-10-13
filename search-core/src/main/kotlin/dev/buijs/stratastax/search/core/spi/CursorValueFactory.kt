@@ -41,7 +41,7 @@ interface CursorValueFactory<T : Any> {
 }
 
 /**
- * Several [CursorValueFactory]s contributed as one unit, e.g. every factory a code generator wrote
+ * Several [CursorValueFactory]s contributed as one unit, e.g., every factory a code generator wrote
  * for a module: one bean instead of one per factory. A registry built from beans registers each of
  * [factories] as if it were a bean of its own.
  */

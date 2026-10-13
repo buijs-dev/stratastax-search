@@ -23,13 +23,6 @@ import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.Instant
 
-/**
- * [CursorElement.ListValue] uses a length-prefixed ("netstring") encoding for its items
- * specifically so it doesn't need the same escaping discipline [CursorElement.StringValue] uses to
- * stay safe inside the top-level, `COMPONENT_DELIMITER`-joined cursor payload - these tests exist
- * to prove that holds even when an item's own serialized form contains every delimiter character in
- * play (`|`, `%`, `:`).
- */
 internal class CursorElementListValueTest {
 
     @Test

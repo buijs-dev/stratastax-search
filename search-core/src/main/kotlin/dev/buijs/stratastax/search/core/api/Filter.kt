@@ -42,7 +42,9 @@ data class AndExpression(
 ) : FilterExpression {
 
     init {
-        validate(children.size >= 2) { "AndExpression requires at least 2 child expressions." }
+        validate(children.size >= 2) {
+            "AndExpression requires at least 2 child expressions."
+        }
     }
 }
 
@@ -57,7 +59,9 @@ data class OrExpression(
 ) : FilterExpression {
 
     init {
-        validate(children.size >= 2) { "OrExpression requires at least 2 child expressions." }
+        validate(children.size >= 2) {
+            "OrExpression requires at least 2 child expressions."
+        }
     }
 }
 
@@ -89,7 +93,9 @@ data class InExpression(
 ) : FilterExpression {
 
     init {
-        validate(values.isNotEmpty()) { "In/Out expression requires a non-empty list of values." }
+        validate(values.isNotEmpty()) {
+            "In/Out expression requires a non-empty list of values."
+        }
     }
 }
 
@@ -108,4 +114,9 @@ data class LikeExpression(
 
 /** The RSQL operator token of this expression: `=ilike=` when it ignores case, else `=like=`. */
 internal val LikeExpression.operatorToken: String
-    get() = if (ignoreCase) ComparisonOperator.ILIKE.token else ComparisonOperator.LIKE.token
+    get() =
+        if (ignoreCase) {
+            ComparisonOperator.ILIKE.token
+        } else {
+            ComparisonOperator.LIKE.token
+        }

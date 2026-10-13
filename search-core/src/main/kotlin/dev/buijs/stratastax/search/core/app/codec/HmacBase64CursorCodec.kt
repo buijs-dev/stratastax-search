@@ -40,7 +40,6 @@ internal class HmacBase64CursorCodec(
 ) : CursorCodec {
 
     private companion object {
-
         const val HMAC_ALGORITHM = "HmacSHA256"
         val charset = Charsets.UTF_8
     }
@@ -175,7 +174,7 @@ internal class HmacBase64CursorCodec(
     private fun encodeCriteriaPart(part: String?): String =
         (part?.let { CursorElement.StringValue(it) } ?: CursorElement.NullValue).encode()
 
-    // A cursor built without criteria carries a null sort; otherwise sort is text, filter text or
+    // A cursor built without criteria carries a null sort; otherwise sort is text, filter-text or
     // null.
     private fun decodeCriteria(
         sortPart: String,

@@ -18,6 +18,7 @@ package dev.buijs.stratastax.search.core.api
 
 import dev.buijs.stratastax.entity.core.api.EntityField
 import dev.buijs.stratastax.entity.core.api.EntityFieldType
+import dev.buijs.stratastax.search.testdata.Status
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -35,12 +36,6 @@ internal class FilterDslTest {
     private val dateTimeField = EntityField("createdAt", EntityFieldType.DATETIME)
     private val enumField =
         EntityField("status", EntityFieldType.ENUM, enumValues = setOf("ACTIVE", "PENDING"))
-
-    enum class Status {
-        ACTIVE,
-    }
-
-    // == eq/ne ==
 
     @Test
     fun `eq builds a ComparisonExpression with the typed value, no string round-trip`() {

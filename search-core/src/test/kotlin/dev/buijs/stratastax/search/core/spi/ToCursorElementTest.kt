@@ -17,6 +17,8 @@
 package dev.buijs.stratastax.search.core.spi
 
 import dev.buijs.stratastax.search.core.api.SearchException
+import dev.buijs.stratastax.search.testdata.Status
+import dev.buijs.stratastax.search.testdata.WrappedUuid
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -29,16 +31,7 @@ import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
 
-/**
- * `toCursorElement` is what lets `cursorValue { }` (search-jooq) return a raw value instead of an
- * explicit `CursorElement.XxxValue(...)`, and is also what `mapsTo`-based cursor auto-derivation
- * converts through - see `JooqBaseFieldBuilder.resolvedCursorValueExtractor`.
- */
 internal class ToCursorElementTest {
-
-    private data class WrappedId(
-        val value: UUID,
-    )
 
     @Test
     fun `null converts to NullValue`() {
@@ -54,12 +47,6 @@ internal class ToCursorElementTest {
     fun `a UUID converts to StringValue via toString`() {
         val id = UUID.randomUUID()
         assertThat(id.toCursorElement("x")).isEqualTo(CursorElement.StringValue(id.toString()))
-    }
-
-    private enum class Status {
-
-        ACTIVE,
-        INACTIVE,
     }
 
     @Test
@@ -115,10 +102,10 @@ internal class ToCursorElementTest {
 
     @Test
     fun `an unsupported type throws with a helpful message`() {
-        assertThatThrownBy { WrappedId(UUID.randomUUID()).toCursorElement("someField") }
+        assertThatThrownBy { WrappedUuid(UUID.randomUUID()).toCursorElement("someField") }
             .isInstanceOf(SearchException::class.java)
             .hasMessageContaining("field(\"someField\")")
-            .hasMessageContaining("WrappedId")
+            .hasMessageContaining("WrappedUuid")
     }
 
     @Test
@@ -147,7 +134,7 @@ internal class ToCursorElementTest {
 
     @Test
     fun `a nested list converts to a nested ListValue`() {
-        assertThat(listOf(listOf("a"), emptyList<String>()).toCursorElement("x"))
+        assertThat(listOf(listOf("a"), emptyList()).toCursorElement("x"))
             .isEqualTo(
                 CursorElement.ListValue(
                     listOf(
@@ -165,18 +152,18 @@ internal class ToCursorElementTest {
             CursorValueFactoryRegistry
                 .builder()
                 .register(
-                    object : CursorValueFactory<WrappedId> {
+                    object : CursorValueFactory<WrappedUuid> {
 
-                        override val type = WrappedId::class
+                        override val type = WrappedUuid::class
 
                         override fun convert(
-                            value: WrappedId,
+                            value: WrappedUuid,
                             fieldName: String,
                         ): CursorElement = CursorElement.StringValue(value.value.toString())
                     },
                 ).build()
 
-        assertThat(WrappedId(id).toCursorElement("x", registry))
+        assertThat(WrappedUuid(id).toCursorElement("x", registry))
             .isEqualTo(CursorElement.StringValue(id.toString()))
     }
 

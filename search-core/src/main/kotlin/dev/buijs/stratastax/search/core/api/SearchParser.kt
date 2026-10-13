@@ -58,12 +58,18 @@ class SearchParser(
         configuration: SearchConfiguration,
     ): SearchQuery {
         val limit = request.limit ?: configuration.defaultLimit
-        validate(limit >= 1) { "Limit must be at least 1" }
+        validate(limit >= 1) {
+            "Limit must be at least 1"
+        }
 
-        validate(limit <= configuration.maxLimit) { "Limit exceeds maximum allowed" }
+        validate(limit <= configuration.maxLimit) {
+            "Limit exceeds maximum allowed"
+        }
 
         request.criteria?.filter?.let {
-            validate(it.length <= maxFilterLength) { "Filter exceeds maximum length" }
+            validate(it.length <= maxFilterLength) {
+                "Filter exceeds maximum length"
+            }
         }
 
         val decoded = request.cursor?.let(::decodeCursor)
@@ -95,7 +101,6 @@ class SearchParser(
         return SearchQuery(limit = limit, sort = sort, filter = filter, cursor = decoded)
     }
 
-    // The sort of a cursor that no longer matches the configuration is just an invalid cursor.
     private fun readCursorSort(
         text: String,
         configuration: SearchConfiguration,
@@ -111,7 +116,10 @@ class SearchParser(
             throw InvalidCursorException("Invalid cursor")
         }
 
-        val decoded = cursorCodec.decode(cursor) ?: throw InvalidCursorException("Invalid cursor")
+        val decoded =
+            cursorCodec.decode(cursor)
+                ?: throw InvalidCursorException("Invalid cursor")
+
         if (isExpired(decoded)) {
             throw InvalidCursorException("Cursor has expired")
         }

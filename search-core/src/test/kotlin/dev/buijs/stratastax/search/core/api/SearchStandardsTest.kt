@@ -60,7 +60,7 @@ class SearchStandardsTest {
 
     @Test
     fun `standard cursor codec round-trips a cursor`() {
-        val codec = standardCursorCodec(CursorSigningKey { "secret".toByteArray() })
+        val codec = standardCursorCodec({ "secret".toByteArray() })
         val state = CursorState(listOf(CursorElement.StringValue("x")), "hash")
 
         val decoded = codec.decode(codec.encode(state))

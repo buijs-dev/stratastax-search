@@ -45,11 +45,14 @@ internal object SortWriter {
             text.split(",").map { part ->
                 val (name, direction) = part.split(":", limit = 2).let { it[0] to it.getOrNull(1) }
 
-                validate(direction != null) { "Invalid sort in cursor: '$part'" }
+                validate(direction != null) {
+                    "Invalid sort in cursor: '$part'"
+                }
 
                 val field =
                     SearchFieldCache.find(name, configuration)
                         ?: throw SearchException("Unknown sort field '$name' in cursor")
+
                 SortField(field, SortDirection.of(direction!!, name))
             },
         )

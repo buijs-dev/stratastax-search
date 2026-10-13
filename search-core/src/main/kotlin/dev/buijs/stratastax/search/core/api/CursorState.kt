@@ -78,7 +78,6 @@ enum class CursorDirection(
     ;
 
     internal companion object {
-
         fun ofCode(code: String?): CursorDirection? = entries.firstOrNull { it.code == code }
     }
 }

@@ -156,7 +156,9 @@ private fun EntityField.inExpression(
         "Operator '$operator' is not allowed for field '$name' of type $type"
     }
 
-    validate(values.isNotEmpty()) { "$operator on field '$name' requires at least one value" }
+    validate(values.isNotEmpty()) {
+        "$operator on field '$name' requires at least one value"
+    }
 
     return InExpression(
         field = this,
@@ -187,7 +189,9 @@ private fun EntityField.typedInExpression(
         "Operator '$operator' is not allowed for field '$name' of type $type"
     }
 
-    validate(values.isNotEmpty()) { "$operator on field '$name' requires at least one value" }
+    validate(values.isNotEmpty()) {
+        "$operator on field '$name' requires at least one value"
+    }
 
     return InExpression(
         field = this,
