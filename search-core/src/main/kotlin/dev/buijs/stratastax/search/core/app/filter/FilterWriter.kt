@@ -75,6 +75,7 @@ internal object FilterWriter {
             is FilterValue.NumberValue -> quote(value.value.toPlainString())
             is FilterValue.BooleanValue -> quote(value.value.toString())
             is FilterValue.DateTimeValue -> quote(value.value.toString())
+            is FilterValue.DateValue -> quote(value.value.toString())
             is FilterValue.EnumValue -> quote(value.value)
             is FilterValue.UuidValue -> quote(value.value.toString())
             is FilterValue.JsonValue -> quote(value.value)

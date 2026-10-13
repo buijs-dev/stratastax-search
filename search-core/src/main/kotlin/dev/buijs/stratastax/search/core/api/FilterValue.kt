@@ -25,6 +25,7 @@ import dev.buijs.stratastax.search.core.api.CorruptFilterValue.InvalidNumber
 import dev.buijs.stratastax.search.core.api.CorruptFilterValue.InvalidUuid
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 /** Represents a successfully parsed typed filter value. */
@@ -58,12 +59,23 @@ sealed interface FilterValue {
     ) : FilterValue
 
     /**
-     * Wrapper for date-time filter values represented as UTC [Instant].
+     * Wrapper for date-time filter values represented as [Instant]. An offset in the input is
+     * converted to the same instant.
      *
      * @property value The date-time value.
      */
     data class DateTimeValue(
         val value: Instant,
+    ) : FilterValue
+
+    /**
+     * Wrapper for date filter values without a time. How a date is compared to a date-time
+     * column is up to the backend.
+     *
+     * @property value The date value.
+     */
+    data class DateValue(
+        val value: LocalDate,
     ) : FilterValue
 
     /**
@@ -134,7 +146,7 @@ sealed interface FilterValue {
                         }
                         is InvalidDateTime -> {
                             throw SearchException(
-                                "Invalid ISO-8601 UTC date-time '$value' for field '${field.name}'",
+                                "Invalid ISO-8601 date or date-time '$value' for field '${field.name}'",
                             )
                         }
                         is InvalidEnum -> {
@@ -207,6 +219,7 @@ sealed interface FilterValue {
                 EntityFieldType.DATETIME,
                 -> {
                     runCatching { ValidFilterValue(DateTimeValue(Instant.parse(value))) }
+                        .recoverCatching { ValidFilterValue(DateValue(LocalDate.parse(value))) }
                         .getOrElse { InvalidDateTime(field, value) }
                 }
 
@@ -263,7 +276,7 @@ internal sealed interface CorruptFilterValue : FilterValueParseResult {
         override val value: String,
     ) : CorruptFilterValue
 
-    /** Represents an invalid date-time value that does not conform to ISO-8601 UTC format. */
+    /** Represents a value that is neither an ISO-8601 date nor an ISO-8601 date-time. */
     data class InvalidDateTime(
         override val field: EntityField,
         override val value: String,

@@ -80,6 +80,7 @@ object CriteriaHash {
             is FilterValue.NumberValue -> "N:${value.toPlainString()}"
             is FilterValue.BooleanValue -> "B:$value"
             is FilterValue.DateTimeValue -> "T:$value"
+            is FilterValue.DateValue -> "D:$value"
             is FilterValue.EnumValue -> "E:${lengthPrefixed(value)}"
             is FilterValue.UuidValue -> "U:$value"
             is FilterValue.JsonValue -> "J:${lengthPrefixed(value)}"

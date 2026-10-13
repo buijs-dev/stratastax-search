@@ -60,6 +60,12 @@ class CriteriaHashTest {
     }
 
     @Test
+    fun `a date does not hash like the start of that day`() {
+        assertThat(hash(filter = "playedAt==2026-01-01"))
+            .isNotEqualTo(hash(filter = "playedAt==2026-01-01T00:00:00Z"))
+    }
+
+    @Test
     fun `equal criteria hash alike regardless of casing and connector notation`() {
         assertThat(hash("PLAYEDAT:desc", "name==x;active==true"))
             .isEqualTo(hash("playedAt:DESC", "NAME==x and ACTIVE==TRUE"))

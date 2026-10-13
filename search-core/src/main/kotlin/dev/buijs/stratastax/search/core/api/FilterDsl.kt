@@ -21,6 +21,7 @@ import dev.buijs.stratastax.entity.core.api.EntityFieldType
 import dev.buijs.stratastax.search.core.app.validate
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import java.time.OffsetDateTime
 
 /** Field equals the raw [value], parsed according to the field type. */
@@ -240,13 +241,12 @@ private fun EntityField.toFilterValue(value: Any?): FilterValue =
             EntityFieldType.DATE,
             EntityFieldType.DATETIME,
             -> {
-                FilterValue.DateTimeValue(
-                    when (value) {
-                        is Instant -> value
-                        is OffsetDateTime -> value.toInstant()
-                        else -> throw typeMismatch(value)
-                    },
-                )
+                when (value) {
+                    is Instant -> FilterValue.DateTimeValue(value)
+                    is OffsetDateTime -> FilterValue.DateTimeValue(value.toInstant())
+                    is LocalDate -> FilterValue.DateValue(value)
+                    else -> throw typeMismatch(value)
+                }
             }
             // Raw JSON text passed as a String, to avoid needing a JSON encoder in this module.
             EntityFieldType.JSON -> {

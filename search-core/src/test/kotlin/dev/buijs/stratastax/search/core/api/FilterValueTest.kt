@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import java.util.UUID
 
 class FilterValueTest {
@@ -77,6 +78,20 @@ class FilterValueTest {
         }
 
         @Test
+        fun `a date-time with an offset is parsed as the same Instant`() {
+            assertThat(parse(dateTime, "2026-01-01T12:15:30+02:00"))
+                .isEqualTo(FilterValue.DateTimeValue(Instant.parse("2026-01-01T10:15:30Z")))
+        }
+
+        @Test
+        fun `a date without time is parsed as LocalDate`() {
+            val day = LocalDate.parse("2026-01-01")
+
+            assertThat(parse(date, "2026-01-01")).isEqualTo(FilterValue.DateValue(day))
+            assertThat(parse(dateTime, "2026-01-01")).isEqualTo(FilterValue.DateValue(day))
+        }
+
+        @Test
         fun `uuid is parsed`() {
             val id = UUID.randomUUID()
 
@@ -112,7 +127,7 @@ class FilterValueTest {
         fun `invalid date-time`() {
             assertThatThrownBy { parse(dateTime, "yesterday") }
                 .isInstanceOf(SearchException::class.java)
-                .hasMessage("Invalid ISO-8601 UTC date-time 'yesterday' for field 'createdAt'")
+                .hasMessage("Invalid ISO-8601 date or date-time 'yesterday' for field 'createdAt'")
         }
 
         @Test

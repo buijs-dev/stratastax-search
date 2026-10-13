@@ -14,6 +14,7 @@ stratastax-entity.
 - `SearchParser` that turns a `SearchRequest` into a validated `SearchQuery`, with configurable cursor expiry and
   filter and cursor length limits.
 - RSQL filter parser with `==`, `!=`, `=gt=`, `=ge=`, `=lt=`, `=le=`, `=in=`, `=out=`, `=like=` and `=ilike=`.
+- Date/time filter values as ISO-8601 date-time with offset (`DateTimeValue`) or date without time (`DateValue`).
 - Sort parser for `field:DIRECTION` lists that always appends the tiebreaker.
 - HMAC-signed cursors and `CursorPageAssembler` for previous, current and next cursors.
 - `search { }` and filter DSLs, including `containsIgnoreCase`.

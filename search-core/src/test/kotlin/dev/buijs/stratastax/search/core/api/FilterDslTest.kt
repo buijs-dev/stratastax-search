@@ -24,6 +24,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.UUID
 
@@ -94,6 +95,12 @@ internal class FilterDslTest {
         assertThat((dateTimeField eq instant).value).isEqualTo(FilterValue.DateTimeValue(instant))
         assertThat((dateTimeField eq instant.atOffset(ZoneOffset.UTC)).value)
             .isEqualTo(FilterValue.DateTimeValue(instant))
+    }
+
+    @Test
+    fun `eq wraps LocalDate as DateValue`() {
+        val day = LocalDate.of(2026, 1, 1)
+        assertThat((dateTimeField eq day).value).isEqualTo(FilterValue.DateValue(day))
     }
 
     @Test

@@ -391,6 +391,7 @@ Typed operators take Kotlin values and check them against the field type:
 | `status eq MatchStatus.ACTIVE`              | `status==ACTIVE`                  |
 | `status ne "CANCELLED"`                     | `status!=CANCELLED`               |
 | `playedAt gt Instant.parse("2026-…Z")`      | `playedAt=gt=2026-…Z`             |
+| `playedAt ge LocalDate.of(2026, 1, 1)`      | `playedAt=ge=2026-01-01`          |
 | `score ge 50` / `score lt 18` / `le`        | `score=ge=50` / `score=lt=18`     |
 | `status isIn listOf(PENDING, ACTIVE)`       | `status=in=(PENDING,ACTIVE)`      |
 | `status notIn listOf(CANCELLED)`            | `status=out=(CANCELLED)`          |
@@ -401,7 +402,7 @@ Typed operators take Kotlin values and check them against the field type:
 | `name.containsIgnoreCase(value = "100%")`   | `name=ilike="%100\\%%"` (escaped) |
 
 Values are typed per field: `NUMBER` accepts `Int`, `Long`, `Short`, `Float`, `Double` and
-`BigDecimal`; `DATE`/`DATETIME` accept `Instant` and `OffsetDateTime`; `ENUM` accepts an enum
+`BigDecimal`; `DATE`/`DATETIME` accept `Instant`, `OffsetDateTime` and `LocalDate`; `ENUM` accepts an enum
 constant or its name; `JSON` accepts the raw JSON text as `String`. A mismatch, or an operator that
 is not allowed for the field type (e.g. `like` on a number), throws a `SearchException` right away.
 

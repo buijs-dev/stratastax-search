@@ -104,7 +104,7 @@ filter=name=ilike="Alex%"
 - Strings: Can be unquoted if they contain no whitespace, quotes, parentheses or the connectors `;` and `,`. Use double or single quotes for strings containing any of those: `title=="Grand Final"`. A value following an operator may contain `=` and `!` unquoted (`code==a=b` matches the text `a=b`). Inside quotes a quote character or backslash is escaped with a backslash.
 - Numbers: Integer or floating-point numbers without quotes: `score=ge=100`, `price=le=99.95`.
 - Booleans: `true` or `false`: `active==true`.
-- Date & Times: Must be a complete ISO-8601 instant, preferably in UTC: `2026-08-04T10:00:00Z`; fractional seconds are allowed (`2026-08-04T10:00:00.500Z`). A date without a time (`2026-08-04`) is rejected. Offsets such as `+02:00` are tolerated and converted to the same instant, but clients should send UTC.
+- Date & Times: ISO-8601. A date-time includes an offset: `2026-08-04T10:00:00Z` and `2026-08-04T12:00:00+02:00` are the same instant; fractional seconds are allowed (`2026-08-04T10:00:00.500Z`). A date without a time is also accepted: `playedAt=ge=2026-08-04`; how a date is compared to a date-time field is up to the backend. A date-time without an offset (`2026-08-04T10:00:00`) is rejected.
 - Enums: Must exactly match one of the documented values; enum values are case-sensitive: `status==ACTIVE`.
 - UUIDs: The standard textual form: `id==3f2504e0-4f89-11d3-9a0c-0305e82c3301`.
 - JSON: Only `==` and `!=`, compared against the whole value.

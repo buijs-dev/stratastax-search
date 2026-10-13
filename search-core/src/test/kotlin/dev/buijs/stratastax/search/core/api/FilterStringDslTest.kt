@@ -23,6 +23,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 import java.time.Instant
+import java.time.LocalDate
 
 /** The string-based half of the filter DSL, plus the type-mismatch paths of the typed half. */
 internal class FilterStringDslTest {
@@ -87,6 +88,8 @@ internal class FilterStringDslTest {
             .isEqualTo(ComparisonOperator.LESS_THAN_OR_EQUAL)
         assertThat(createdAt.greaterThan("2026-01-01T00:00:00Z").value)
             .isEqualTo(FilterValue.DateTimeValue(Instant.parse("2026-01-01T00:00:00Z")))
+        assertThat(createdAt.lessThan("2026-01-01").value)
+            .isEqualTo(FilterValue.DateValue(LocalDate.of(2026, 1, 1)))
     }
 
     @Test

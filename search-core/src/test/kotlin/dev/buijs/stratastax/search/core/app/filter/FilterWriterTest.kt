@@ -41,6 +41,7 @@ class FilterWriterTest {
                 "score=le=99.95",
                 "playedAt=ge=2026-01-01T00:00:00Z",
                 "playedAt=lt=2026-01-01T00:00:00.500Z",
+                "playedAt=le=2026-01-01",
                 "active==true",
                 "status=in=(ACTIVE,PENDING)",
                 "status=out=(COMPLETED)",

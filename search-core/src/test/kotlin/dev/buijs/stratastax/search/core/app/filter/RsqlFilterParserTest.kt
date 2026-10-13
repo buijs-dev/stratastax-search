@@ -34,6 +34,7 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import java.time.Instant
+import java.time.LocalDate
 
 class RsqlFilterParserTest {
 
@@ -229,9 +230,18 @@ class RsqlFilterParserTest {
     inner class DateTimeFormatTests {
 
         @Test
-        fun `date without time is rejected`() {
-            assertThatThrownBy { parser.parse("playedAt==2026-01-01", testSearchConfiguration) }
-                .isInstanceOf(SearchException::class.java)
+        fun `date without time is parsed as LocalDate`() {
+            val filter = parser.parse("playedAt=ge=2026-01-01", testSearchConfiguration)
+
+            assertThat((filter!!.root as ComparisonExpression).value)
+                .isEqualTo(FilterValue.DateValue(LocalDate.of(2026, 1, 1)))
+        }
+
+        @Test
+        fun `date-time without offset is rejected`() {
+            assertThatThrownBy {
+                parser.parse("playedAt==2026-01-01T00:00:00", testSearchConfiguration)
+            }.isInstanceOf(SearchException::class.java)
         }
 
         @Test
@@ -244,7 +254,6 @@ class RsqlFilterParserTest {
 
         @Test
         fun `non-utc offset is accepted and normalized to the same instant`() {
-            // README documents this: offsets are tolerated, the value is stored as an Instant.
             val filter =
                 parser.parse("playedAt==2026-01-01T02:00:00+02:00", testSearchConfiguration)
 
@@ -278,7 +287,7 @@ class RsqlFilterParserTest {
         }
 
         @Test
-        fun `should throw on malformed ISO-8601 UTC date`() {
+        fun `should throw on malformed ISO-8601 date`() {
             assertThatThrownBy { parser.parse("playedAt==2026-99-99", testSearchConfiguration) }
                 .isInstanceOf(SearchException::class.java)
         }
