@@ -3,7 +3,7 @@
 [![Stratastax](https://img.shields.io/badge/Product-stratastax.dev-4F46E5?style=flat)](https://stratastax.dev/)
 [![](https://img.shields.io/badge/Buijs-Software-blue)](https://buijs.dev/)
 [![GitHub](https://img.shields.io/github/license/buijs-dev/stratastax-search?color=black)](https://github.com/buijs-dev/stratastax-search/blob/main/LICENSE)
-[![codecov](https://codecov.io/gh/buijs-dev/stratastax-search/graph/badge.svg?token=BNKJJFHIcP)](https://codecov.io/gh/buijs-dev/stratastax-search)
+[![codecov](https://codecov.io/gh/buijs-dev/stratastax-search/branch/develop/graph/badge.svg?token=gCnPRqSaVF)](https://codecov.io/gh/buijs-dev/stratastax-search)
 [![CodeScene Average Code Health](https://codescene.io/projects/85920/status-badges/average-code-health)](https://codescene.io/projects/85920)
 [![CodeScene System Mastery](https://codescene.io/projects/85920/status-badges/system-mastery)](https://codescene.io/projects/85920)
 
